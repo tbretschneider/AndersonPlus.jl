@@ -1,5 +1,7 @@
 module AndersonPlus
 
+import LinearAlgebra
+
 export greet_your_package_name
 include("0_Structs.jl")
 include("2_HelperFunctions.jl")
