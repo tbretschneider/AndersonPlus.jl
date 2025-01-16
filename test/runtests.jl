@@ -2,5 +2,6 @@ using AndersonPlus
 using Test
 
 @testset "AndersonPlus.jl" begin
-    # Write your tests here.
+    @test AndersonPlus.greet_your_package_name() == "Hello YourPackageName!"
+    @test AndersonPlus.greet_your_package_name() != "Hello world!"
 end
