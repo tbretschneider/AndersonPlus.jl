@@ -21,6 +21,9 @@ struct AAProblem
     convparams::AAConvParams
 end
 
+struct AAAnalysis
+    metricnames::NamedTuple # Metrics to track (e.g., :residual, :iterations)
+end
 
 struct AAInput
     problem::AAProblem               # Fixed-point map (GFix!(G, x))
@@ -28,16 +31,9 @@ struct AAInput
     metrics::AAAnalysis
 end
 
-
-struct AAAnalysis
-    metricnames::NamedTuple # Metrics to track (e.g., :residual, :iterations)
-end
-
 struct AAAnalysisOutput
     metrics::NamedTuple # Metrics to track (e.g., :residual, :iterations)
 end
-
-
 
 struct AAOutput
     solution::Vector{Float64}        # Converged result
