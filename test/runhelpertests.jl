@@ -28,7 +28,7 @@ using AndersonPlus: checktolerances
     tolparams3 = (atol=1e-5, rtol=0.0)
 
     x1 = [1.0, 2.0]
-    y1 = [1.0, 2.00001]  # Within atol
+    y1 = [1.0, 2.000001]  # Within atol
     x2 = [1.0, 2.0]
     y2 = [1.1, 2.1]       # Exceeds atol and rtol
     x3 = [1.0, 2.0]
