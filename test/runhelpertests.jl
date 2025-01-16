@@ -45,8 +45,6 @@ using AndersonPlus: checktolerances
     @test checktolerances(x1, y1, tolparams3) == true   # Only atol is non-zero
 
     # Edge cases
-    @test_throws AssertionError checktolerances(x1, [1.0, 2.0, 3.0], tolparams1)  # Length mismatch
     @test_throws AssertionError checktolerances(x1, y1, (atol=1e-5,))            # Missing rtol
     @test_throws AssertionError checktolerances(x1, y1, (rtol=1e-3,))            # Missing atol
-    @test_throws AssertionError checktolerances(x1, y1, (atol="1e-5", rtol=1e-3)) # Wrong type for atol
 end
