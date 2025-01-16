@@ -18,6 +18,9 @@ using AndersonPlus: ridge_regression, gamma_to_alpha
     end
 end
 
+using AndersonPlus: checktolerances
+
+
 @testset "checktolerances tests" begin
     # Define test inputs
     tolparams1 = (atol=1e-5, rtol=1e-3)
