@@ -35,8 +35,8 @@ function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::Name
         return false
     end
 
-    if norm(x .- y) < atol || 
-       (norm(x .- y) / min(norm(x), norm(y))) < rtol || 
+    if norm(x .- y) <= atol || 
+       (norm(x .- y) / min(norm(x), norm(y))) <= rtol || 
        x == y
         return true
     end
