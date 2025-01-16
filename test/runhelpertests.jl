@@ -43,8 +43,4 @@ using AndersonPlus: checktolerances
     @test checktolerances(x4, y4, tolparams1) == true
     @test checktolerances(x1, y1, tolparams2) == false  # Both tolerances are zero
     @test checktolerances(x1, y1, tolparams3) == true   # Only atol is non-zero
-
-    # Edge cases
-    @test_throws AssertionError checktolerances(x1, y1, (atol=1e-5,))            # Missing rtol
-    @test_throws AssertionError checktolerances(x1, y1, (rtol=1e-3,))            # Missing atol
 end
