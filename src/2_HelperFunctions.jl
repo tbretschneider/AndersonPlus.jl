@@ -24,3 +24,22 @@ function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
 
     return alpha
 end
+
+function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::NamedTuple)
+
+    atol = tolparams[:atol]
+    rtol = tolparams[:rtol]
+
+    # Check tolerances
+    if atol == 0.0 && rtol == 0.0
+        return false
+    end
+
+    if norm(x .- y) < atol || 
+       (norm(x .- y) / min(norm(x), norm(y))) < rtol || 
+       x == y
+        return true
+    end
+
+    return false
+end
