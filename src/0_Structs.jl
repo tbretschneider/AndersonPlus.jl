@@ -1,7 +1,7 @@
 # Structure for the output of the algorithm
 
 struct AAMethod
-    methodname::NamedTuple
+    methodname::Symbol
 	methodparams::NamedTuple
 end
 
@@ -22,17 +22,20 @@ struct AAProblem
 end
 
 struct AAAnalysis
-    metricnames::NamedTuple # Metrics to track (e.g., :residual, :iterations)
+    liveanalysis::Vector{Symbol}
+    midanalysis::Vector{Symbol} # Metrics to track (e.g., :residual, :iterations)
+    postanalysis::Vector{Symbol} # Metrics to track (e.g., :residual, :iterations)
+    updatefreq::Int
 end
 
 struct AAInput
     problem::AAProblem               # Fixed-point map (GFix!(G, x))
     algorithm::AAAlgorithm			# Initial iterate
-    metrics::AAAnalysis
+    analyses::AAAnalysis
 end
 
 struct AAAnalysisOutput
-    metrics::NamedTuple # Metrics to track (e.g., :residual, :iterations)
+    postanalysis::NamedTuple # Metrics to track (e.g., :residual, :iterations)
 end
 
 struct AAOutput

@@ -1,0 +1,54 @@
+function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfunc::Function, midanalysisfunc::Function)
+    if aamethod.methodname == :vanilla
+        # Define the function for the :vanilla method
+        return function(historicalstuff::NamedTuple, x_kp1::Vector{Float64}, x_k::Vector{Float64})
+            # Update `x_kp1` and `x_k` using GFix!
+            GFix!(historicalstuff, x_kp1, x_k)
+
+            m = aamethod.methodparams.m
+            
+            residual = historicalstuff.residual
+            solhist = historicalstuff.solhist
+            iterations = historicalstuff.iterations
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            push!(residual, copy(g_k))
+            if length(residual) > m
+                popfirst!(residual)
+            end
+
+            G_k = hcat([residual[i] .- residual[i-1] for i in
+            2:length(residual)]...)
+            X_k = hcat([solhist[i] .- solhist[i-1] for i in 2:length(solhist)]...)
+            try
+                gamma_k = G_k \ residual[end]
+            catch e
+                gamma_k = ridge_regression(G_k, residual[end])
+            end
+            x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
+
+            x_k .= copy(x_kp1)
+
+            push!(solhist,x_kp1)
+
+            if length(solhist) > m
+                popfirst(solhist)
+            end
+
+            iterations += 1
+
+            midanalysisin = (G_k = G_k, gamma_k = gamma_k, X_k = X_k)
+
+            liveanalysisin = (iterations = iterations, x_kp1 = x_kp1, x_k = solhist[end-1],residual = residual)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+        end
+    else
+        error("Unsupported methodname: $(aamethod.methodname)")
+    end
+end
