@@ -52,7 +52,7 @@ function AASolve(input::AAInput)::AAOutput
 
     postanalysis = AAAnalysisOutput(input,fullmidanalysis,iterations)
 
-    output_postanalysis(postanalysis,summary)
+    output_postanalysis(postanalysis.output,summary)
 
     solution = x_k
 
