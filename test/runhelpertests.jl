@@ -23,9 +23,9 @@ using AndersonPlus: checktolerances
 
 @testset "checktolerances tests" begin
     # Define test inputs
-    tolparams1 = (atol=1e-5, rtol=1e-3)
-    tolparams2 = (atol=0.0, rtol=0.0)
-    tolparams3 = (atol=1e-5, rtol=0.0)
+    tolparams1 = AAConvParams(1e-5, 1e-3)
+    tolparams2 = AAConvParams(0.0, 0.0)
+    tolparams3 = AAConvParams(1e-5, 0.0)
 
     x1 = [1.0, 2.0]
     y1 = [1.0, 2.000001]  # Within atol
