@@ -99,20 +99,6 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
 end
 
 function initialise_historicalstuff(methodname::Symbol)
-
-    result = NamedTuple()
-
-    if methodname == :vanilla
-        result = merge(result, (residual = [], solhist = [], iterations = 1))
-    else
-        error("Unsupported AAMethod: $methodname")
-    end
-
-    # Return the initialized HistoricalStuff
-    return result
-end
-
-function initialise_historicalstuff(methodname::Symbol)
     if methodname == :vanilla
         # Define and instantiate VanillaHistoricalStuff struct dynamically
         eval(quote
