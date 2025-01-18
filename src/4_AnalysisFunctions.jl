@@ -75,12 +75,17 @@ function output_postanalysis(postanalysis::NamedTuple,summary; line_width::Int =
 
         # Iterate through the fields of the NamedTuple
         for (field, value) in pairs(postanalysis)
+		if value isa Float64
             # Append each field's name and value to the summary
             summary *= @sprintf("%s is %.4f, ", string(field), value)
+	    	end
+		if value isa Int
+            # Append each field's name and value to the summary
+            summary *= @sprintf("%s is %04d, ", string(field), value)
+	    	end
         end
 
         # Remove the trailing comma and space, and add a period
-        summary = rstrip(summary, ", ") * "."
 
         # Line wrapping: Break the summary into chunks of size `line_width`
         lines = []
