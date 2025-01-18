@@ -1,5 +1,5 @@
 # Define the function G(u)
-function p1_f!(out, u, p = nothing)
+function p1_f!(out::Vector{Float64}, u::Vector{Float64}, p = nothing)
     out[1] = cos((u[1] + u[2]) / 2)
     out[2] = cos((u[1] + u[2]) / 2) + 1e-8 * sin(u[1]^2)
     return nothing
