@@ -39,6 +39,7 @@ end
 
 using Printf
 
+
 function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefreq::Int, startwalltime::Float64)
     if (iterations % updatefreq == 0) && (iterations > 2)
         # Start the format string and values with iteration count
@@ -47,7 +48,7 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
 
         # Dynamically append each field in liveanalysis
         for (field, value) in pairs(liveanalysis)
-            log_format *= @sprintf(", %s: %.4f", string(field))  # Format as a floating point
+            log_format *= ", $(string(field)): %.4f"  # Add field name and placeholder
             push!(log_values, value)
         end
 
@@ -55,8 +56,10 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
         log_format *= ", walltime: %.2f min"
         push!(log_values, (time() - startwalltime) / 60)
 
-        # Generate the final log string
-        log = @sprintf(log_format, log_values...)
+        # Create the final log string
+        fmt = Printf.Format(log_format)  # Convert dynamic string to a Printf.Format object
+        log = Printf.format(fmt, log_values...)  # Apply the format with the values
+
         println(log)
     end
 end

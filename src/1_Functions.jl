@@ -2,7 +2,6 @@ function greet_your_package_name()
     return "Hello YourPackageName!"
 end
 
-export AASolve
 function AASolve(input::AAInput)::AAOutput
 
     x0 = input.problem.x0
