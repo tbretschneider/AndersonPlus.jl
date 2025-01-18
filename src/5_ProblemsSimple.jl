@@ -1,5 +1,4 @@
 # Define the function G(u)
-export p1_f!
 function p1_f!(out, u, p = nothing)
     out[1] = cos((u[1] + u[2]) / 2)
     out[2] = cos((u[1] + u[2]) / 2) + 1e-8 * sin(u[1]^2)
