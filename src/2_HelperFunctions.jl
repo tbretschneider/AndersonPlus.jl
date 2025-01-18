@@ -112,6 +112,22 @@ function initialise_historicalstuff(methodname::Symbol)
     return result
 end
 
+function initialise_historicalstuff(methodname::Symbol)
+    if methodname == :vanilla
+        # Define and instantiate VanillaHistoricalStuff struct dynamically
+        eval(quote
+            mutable struct HistoricalStuff
+                residual::Vector{Vector{Float64}}
+                solhist::Vector{Vector{Float64}}
+                iterations::Int
+            end
+        end)
+        return VanillaHistoricalStuff([], [], 1)
+    else
+        error("Unsupported AAMethod: $methodname")
+    end
+end
+
 function AAAnalysisOutput(input::AAInput,fullmidanalysis::Vector{Any},iterations::Int)
     fields = keys(fullmidanalysis[1])
     
