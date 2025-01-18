@@ -53,6 +53,10 @@ struct AAOutput
     analysis::AAAnalysisOutput
 end
 
+abstract type HistoricalStuff end
 
-
-
+mutable struct VanillaHistoricalStuff <: HistoricalStuff
+    residual::Vector{Vector{Float64}}
+    solhist::Vector{Vector{Float64}}
+    iterations::Int
+end
