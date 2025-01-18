@@ -54,5 +54,7 @@ function AASolve(input::AAInput)::AAOutput
 
     output_postanalysis(postanalysis,summary)
 
+    solution = x_k
+
     return AAOutput(solution,input,postanalysis)
 end
