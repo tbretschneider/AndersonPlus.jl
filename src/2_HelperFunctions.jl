@@ -116,9 +116,9 @@ function AAAnalysisOutput(input::AAInput,fullmidanalysis::Vector{Any},iterations
     fields = keys(fullmidanalysis[1])
     
     # Transform the vector of NamedTuples into a NamedTuple of Vectors
-    output = NamedTuple(
-        [(field => [i.field for i in fullmidanalysis]) for field in fields]...
-    )
+    output = [(field => [i[field] for i in fullmidanalysis]) for field in fields]
+
+    output = NamedTuple(output)
 
     output = merge(output,(methodname = input.algorithm.method.methodname, 
     methodparams = input.algorithm.method.methodparams,
