@@ -1,33 +1,29 @@
 function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfunc::Function, midanalysisfunc::Function)
     if aamethod.methodname == :vanilla
         # Define the function for the :vanilla method
-        return function(historicalstuff::VanillaHistoricalStuff, x_kp1::Vector{Float64}, x_k::Vector{Float64})
+        return function(HS::VanillaHistoricalStuff, x_kp1::Vector{Float64}, x_k::Vector{Float64})
             # Update `x_kp1` and `x_k` using GFix!
             GFix!(x_kp1, x_k)
 
             m = aamethod.methodparams.m
 
-            residual = historicalstuff.residual
-            solhist = historicalstuff.solhist
-            iterations = historicalstuff.iterations
-
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
-            push!(residual, copy(g_k))
-            if length(residual) > m
-                popfirst!(residual)
+            push!(HS.residual, copy(g_k))
+            if length(HS.residual) > m
+                popfirst!(HS.residual)
             end
 
             if iterations > 1
-                G_k = hcat([residual[i] .- residual[i-1] for i in
-                2:length(residual)]...)
-                X_k = hcat([solhist[i] .- solhist[i-1] for i in 2:length(solhist)]...)
+                G_k = hcat([HS.residual[i] .- HS.residual[i-1] for i in
+                2:length(HS.residual)]...)
+                X_k = hcat([HS.solhist[i] .- HS.solhist[i-1] for i in 2:length(HS.solhist)]...)
                 try
-                    gamma_k = G_k \ residual[end]
+                    gamma_k = G_k \ HS.residual[end]
 		    println("noridgeregression")
                 catch e
 			println("ridgeregressionused")
-                    gamma_k = ridge_regression(G_k, residual[end])
+                    gamma_k = ridge_regression(G_k, HS.residual[end])
                 end
                 x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
 
@@ -35,20 +31,20 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 G_k = nothing
                 gamma_k = nothing
                 X_k = nothing
-                push!(solhist,x_k)
+                push!(HS.solhist,x_k)
             end
 
-            push!(solhist,x_kp1)
+            push!(HS.solhist,x_kp1)
 
-            if length(solhist) > m
-                popfirst!(solhist)
+            if length(HS.solhist) > m
+                popfirst!(HS.solhist)
             end
 
-            iterations += 1
+            HS.iterations += 1
 
-            midanalysisin = (G_k = G_k, gamma_k = gamma_k, X_k = X_k,residual = residual[end])
+            midanalysisin = (G_k = G_k, gamma_k = gamma_k, X_k = X_k,residual = HS.residual[end])
 
-            liveanalysisin = (iterations = iterations, x_kp1 = x_kp1, x_k = solhist[end-1],residual = residual)
+            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = HS.solhist[end-1],residual = HS.residual)
 
             midanalysis = midanalysisfunc(midanalysisin)
 

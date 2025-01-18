@@ -31,26 +31,23 @@ function AASolve(input::AAInput)::AAOutput
     x_k = copy(x_0)
     x_kp1 = copy(x_0)
 
-    historicalstuff = initialise_historicalstuff(method.methodname)
+    HS = initialise_historicalstuff(method.methodname)
 
     fullmidanalysis = []
 
-    iterations = historicalstuff.iterations
-
-
-    while (iterations < maxit) && ~converged
-        midanalysis, liveanalysis = calcx_kp1!(historicalstuff,x_kp1,x_k)
+    while (HS.iterations < maxit) && ~converged
+        midanalysis, liveanalysis = calcx_kp1!(HS,x_kp1,x_k)
 
         push!(fullmidanalysis,midanalysis)
 
-        output_liveanalysis(liveanalysis, iterations, updatefreq, startwalltime)
+        output_liveanalysis(liveanalysis, HS.iterations, updatefreq, startwalltime)
 
         converged = checktolerances(x_kp1,x_k,convparams)
 
         x_k, x_kp1 = x_kp1, x_k
     end
 
-    postanalysis = AAAnalysisOutput(input,fullmidanalysis,iterations)
+    postanalysis = AAAnalysisOutput(input,fullmidanalysis,HS.iterations)
 
     output_postanalysis(postanalysis.output,summary)
 
