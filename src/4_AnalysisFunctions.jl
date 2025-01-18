@@ -47,7 +47,8 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
         if (iterations % updatefreq == 0) && (iterations > 2)
             # Start the format string and values with iteration count
             log_format = "Iteration: %04d"
-            log_values = [iterations]
+            log_values = []
+            push!(log_values,iterations)
 
             # Dynamically append each field in liveanalysis
             for (field, value) in pairs(liveanalysis)
