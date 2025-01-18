@@ -17,6 +17,7 @@ function AASolve(input::AAInput)::AAOutput
     midanalysis = input.analyses.midanalysis
     postanalysis = input.analyses.postanalysis
     updatefreq = input.analyses.updatefreq
+    summary = input.analyses.summary
 
     midanalysisfunc = create_midanalysis_function(midanalysis)
     liveanalysisfunc = create_liveanalysis_function(liveanalysis)
@@ -51,7 +52,7 @@ function AASolve(input::AAInput)::AAOutput
 
     postanalysis = AAAnalysisOutput(input,fullmidanalysis,iterations)
 
-    output_postanalysis(postanalysis)
+    output_postanalysis(postanalysis,summary)
 
     return AAOutput(solution,input,postanalysis)
 end
