@@ -9,6 +9,8 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (G_k_cond = cond(input.G_k),))
             elseif sym == :gamma_k_norm
                 result = merge(result, (gamma_k_norm = norm(input.gamma_k),))
+            elseif sym == :residual
+                result = merge(result, (residual = input.residual,))
             end
         end
 
@@ -58,3 +60,36 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
         println(log)
     end
 end
+
+function output_postanalysis(postanalysis::NamedTuple; line_width::Int = 80)
+    # Start the summary with a general description
+    summary = "Summary: "
+
+    # Iterate through the fields of the NamedTuple
+    for (field, value) in pairs(postanalysis)
+        # Append each field's name and value to the summary
+        summary *= @sprintf("%s is %.4f, ", string(field), value)
+    end
+
+    # Remove the trailing comma and space, and add a period
+    summary = rstrip(summary, ", ") * "."
+
+    # Line wrapping: Break the summary into chunks of size `line_width`
+    lines = []
+    current_line = ""
+    for word in split(summary, " ")
+        if length(current_line) + length(word) + 1 <= line_width
+            current_line *= (current_line == "" ? word : " " * word)
+        else
+            push!(lines, current_line)
+            current_line = word
+        end
+    end
+    push!(lines, current_line)  # Add the last line
+
+    # Print each line
+    for line in lines
+        println(line)
+    end
+end
+

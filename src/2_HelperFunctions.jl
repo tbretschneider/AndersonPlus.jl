@@ -111,3 +111,20 @@ function initialize_historicalstuff(AAMethod::Symbol)
     # Return the initialized HistoricalStuff
     return result
 end
+
+function AAAnalysisOutput(input::AAInput,fullmidanalysis::Vector{Any},iterations::Int)
+    fields = keys(fullmidanalysis[1])
+    
+    # Transform the vector of NamedTuples into a NamedTuple of Vectors
+    output = NamedTuple(
+        [(field => [i[field] for i in fullmidanalysis]) for field in fields]...
+    )
+
+    output = merge(output,(methodname = input.algorithm.method.methodname, 
+    methodparams = input.algorithm.method.methodparams,
+    algorithmparams = input.algorithm.algorithmparams,
+    convparams = input.problem.convparams,
+    iterations = iterations))
+
+    return AAAnalysisOutput(output)
+end

@@ -35,7 +35,7 @@ struct AAInput
 end
 
 struct AAAnalysisOutput
-    postanalysis::NamedTuple # Metrics to track (e.g., :residual, :iterations)
+    output::NamedTuple # Metrics to track (e.g., :residual, :iterations)
 end
 
 struct AAOutput

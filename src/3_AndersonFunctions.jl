@@ -6,7 +6,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             GFix!(historicalstuff, x_kp1, x_k)
 
             m = aamethod.methodparams.m
-            
+
             residual = historicalstuff.residual
             solhist = historicalstuff.solhist
             iterations = historicalstuff.iterations
@@ -28,8 +28,6 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             end
             x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
 
-            x_k .= copy(x_kp1)
-
             push!(solhist,x_kp1)
 
             if length(solhist) > m
@@ -38,7 +36,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             iterations += 1
 
-            midanalysisin = (G_k = G_k, gamma_k = gamma_k, X_k = X_k)
+            midanalysisin = (G_k = G_k, gamma_k = gamma_k, X_k = X_k,residual = residual[end])
 
             liveanalysisin = (iterations = iterations, x_kp1 = x_kp1, x_k = solhist[end-1],residual = residual)
 
