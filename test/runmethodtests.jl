@@ -15,7 +15,7 @@ using AndersonPlus
                             (maxit = 20, ))
 
     Analyses = AAAnalysis([],
-                        [],
+                        [:residualnorm],
                         [],
                         0,false)
     
