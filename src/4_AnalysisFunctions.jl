@@ -11,6 +11,8 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (gamma_k_norm = norm(input.gamma_k),))
             elseif sym == :residual
                 result = merge(result, (residual = input.residual,))
+            elseif sym == :residualnorm
+                result = merge(result, (residualnorm = norm(input.residual),))
             end
         end
 
@@ -25,8 +27,8 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
 
         # Dynamically add fields based on the symbols in `midanalysis`
         for sym in liveanalysis
-            if sym == :residual
-                result = merge(result, (residual = norm(input.x_k.-input.x_kp1),))
+            if sym == :residualnorm
+                result = merge(result, (residualnorm = norm(input.x_k.-input.x_kp1),))
             elseif sym == :residual_ratio
                 result = merge(result, (residual_ratio = norm(input.x_k.-input.x_kp1)/input.residual[end],))
             end
