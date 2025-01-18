@@ -25,10 +25,10 @@ function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
     return alpha
 end
 
-function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::NamedTuple)
+function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AAConvParams)
 
-    atol = tolparams[:atol]
-    rtol = tolparams[:rtol]
+    atol = tolparams.atol
+    rtol = tolparams.rtol
 
     # Check tolerances
     if atol == 0.0 && rtol == 0.0
