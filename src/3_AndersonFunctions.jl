@@ -18,20 +18,22 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 popfirst!(residual)
             end
 
-            G_k = hcat([residual[i] .- residual[i-1] for i in
-            2:length(residual)]...)
-            X_k = hcat([solhist[i] .- solhist[i-1] for i in 2:length(solhist)]...)
-            try
-                gamma_k = G_k \ residual[end]
-            catch e
-                gamma_k = ridge_regression(G_k, residual[end])
-            end
-            x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
+            if iterations > 1
+                G_k = hcat([residual[i] .- residual[i-1] for i in
+                2:length(residual)]...)
+                X_k = hcat([solhist[i] .- solhist[i-1] for i in 2:length(solhist)]...)
+                try
+                    gamma_k = G_k \ residual[end]
+                catch e
+                    gamma_k = ridge_regression(G_k, residual[end])
+                end
+                x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
 
-            push!(solhist,x_kp1)
+                push!(solhist,x_kp1)
 
-            if length(solhist) > m
-                popfirst(solhist)
+                if length(solhist) > m
+                    popfirst(solhist)
+                end
             end
 
             iterations += 1
