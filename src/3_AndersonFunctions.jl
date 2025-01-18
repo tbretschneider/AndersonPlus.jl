@@ -24,7 +24,9 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 X_k = hcat([solhist[i] .- solhist[i-1] for i in 2:length(solhist)]...)
                 try
                     gamma_k = G_k \ residual[end]
+		    println("noridgeregression")
                 catch e
+			println("ridgeregressionused")
                     gamma_k = ridge_regression(G_k, residual[end])
                 end
                 x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
