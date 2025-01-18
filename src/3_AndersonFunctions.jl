@@ -34,6 +34,10 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 if length(solhist) > m
                     popfirst(solhist)
                 end
+            else 
+                G_k = nothing
+                gamma_k = nothing
+                X_k = nothing
             end
 
             iterations += 1
