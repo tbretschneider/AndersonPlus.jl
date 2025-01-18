@@ -29,15 +29,17 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 end
                 x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
 
-                push!(solhist,x_kp1)
-
-                if length(solhist) > m
-                    popfirst(solhist)
-                end
             else 
                 G_k = nothing
                 gamma_k = nothing
                 X_k = nothing
+                push!(solhist,x_k)
+            end
+
+            push!(solhist,x_kp1)
+
+            if length(solhist) > m
+                popfirst(solhist)
             end
 
             iterations += 1
