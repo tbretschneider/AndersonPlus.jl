@@ -98,14 +98,14 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     return AAMethod(method, params)
 end
 
-function initialize_historicalstuff(AAMethod::Symbol)
+function initialise_historicalstuff(methodname::Symbol)
 
     result = NamedTuple()
 
-    if AAMethod == :vanilla
+    if methodname == :vanilla
         result = merge(result, (residual = [], solhist = [], iterations = 1))
     else
-        error("Unsupported AAMethod: $AAMethod")
+        error("Unsupported AAMethod: $methodname")
     end
 
     # Return the initialized HistoricalStuff
