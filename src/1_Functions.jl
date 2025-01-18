@@ -4,7 +4,7 @@ end
 
 function AASolve(input::AAInput)::AAOutput
 
-    x0 = input.problem.x0
+    x_0 = input.problem.x0
     GFix! = input.problem.GFix!
     convparams = input.problem.convparams
 
