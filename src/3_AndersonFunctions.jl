@@ -10,7 +10,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
             push!(HS.residual, copy(g_k))
-            if length(HS.residual) > m
+            if length(HS.residual) > m + 1
                 popfirst!(HS.residual)
             end
 
@@ -36,7 +36,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             push!(HS.solhist,x_kp1)
 
-            if length(HS.solhist) > m
+            if length(HS.solhist) > m + 1
                 popfirst!(HS.solhist)
             end
 
