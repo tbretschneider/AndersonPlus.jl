@@ -5,6 +5,12 @@ function p1_f!(out::Vector{Float64}, u::Vector{Float64})
     return nothing
 end
 
+function p1_f(u::Vector{Float64})
+    out[1] = cos((u[1] + u[2]) / 2)
+    out[2] = cos((u[1] + u[2]) / 2) + 1e-8 * sin(u[1]^2)
+    return out
+end
+
 # Problem parameters
 n = 2  # Dimension of the problem
 u_sol = [0.0, 0.0]  # Solution is assumed for reference (if known)
