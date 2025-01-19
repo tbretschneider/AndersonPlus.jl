@@ -21,5 +21,5 @@ using AndersonPlus
     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 
-    @test isapprox(Output.analysis.output.residualnorm,residual_norm,atol=1e-7)
+    @test isapprox(Output.analysis.output.residualnorm,residual_norm,rtol=5e-3)
 end
