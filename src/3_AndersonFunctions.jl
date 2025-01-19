@@ -19,8 +19,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             @bp
 
             if HS.iterations > 1
-                G_k = hcat([HS.residual[i] .- HS.residual[i-1] for i in
-                2:length(HS.residual)]...)
+                G_k = hcat([HS.residual[i] .- HS.residual[i-1] for i in 2:length(HS.residual)]...)
                 X_k = hcat([HS.solhist[i] .- HS.solhist[i-1] for i in 2:length(HS.solhist)]...)
                 try
                     gamma_k = G_k \ HS.residual[end]
@@ -35,10 +34,10 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 G_k = nothing
                 gamma_k = nothing
                 X_k = nothing
-                push!(HS.solhist,x_k)
+                push!(HS.solhist,copy(x_k))
             end
 
-            push!(HS.solhist,x_kp1)
+            push!(HS.solhist,copy(x_kp1))
 
             if length(HS.solhist) > (m + 1)
                 popfirst!(HS.solhist)
