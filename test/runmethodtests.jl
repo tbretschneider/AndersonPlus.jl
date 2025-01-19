@@ -22,5 +22,5 @@ using AndersonPlus
 
     @test isapprox(Output.analysis.output.residualnorm,residual_norm,rtol=5e-3)
     @test isapprox(Output.analysis.output.G_k_cond[1:7],condition_number[1:7],rtol=5e-3)
-    @test isapprox(Output.analysis.output.alpha_k_norm_l1[2:7],coefficient_norm[2:7],atol=5e-2)
+    @test isapprox(Output.analysis.output.alpha_k_norm_l1[2:7],coefficient_norm[2:7],atol=5e-3)
 end
