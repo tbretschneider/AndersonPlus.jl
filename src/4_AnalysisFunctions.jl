@@ -79,7 +79,7 @@ const SD = Dict(
     :methodparams => "Method Parameters",
     :algorithmparams => "Algorithm Parameters",
     :convparams => "Convergence Parameters",
-    :iterations => "Iterations"
+    :iterations => "Iterations",
     :vanilla => "Vanilla"
 )
 
@@ -90,7 +90,7 @@ function output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int 
         println("*" ^ line_width)
 
         # Nicely formatted title for the summary
-        summary_text = "Summary: $(postanalysis.methodname), with parameters: $(postanalysis.methodparams) and $(postanalysis.algorithmparams)."
+        summary_text = "Summary: $(SD[postanalysis.methodname]), with parameters: $(postanalysis.methodparams) and $(postanalysis.algorithmparams)."
         
         # Line wrapping: Break the summary into chunks of size `line_width`
         lines = []
