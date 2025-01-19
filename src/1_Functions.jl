@@ -15,7 +15,6 @@ function AASolve(input::AAInput)::AAOutput
 
     liveanalysis = input.analyses.liveanalysis
     midanalysis = input.analyses.midanalysis
-    postanalysis = input.analyses.postanalysis
     updatefreq = input.analyses.updatefreq
     summary = input.analyses.summary
 
