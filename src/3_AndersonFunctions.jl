@@ -24,9 +24,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
                 try
                     gamma_k = G_k \ HS.residual[end]
-		    println("noridgeregression")
                 catch e
-			println("ridgeregressionused")
                     gamma_k = ridge_regression(G_k, HS.residual[end])
                 end
 
