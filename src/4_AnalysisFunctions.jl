@@ -17,6 +17,14 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                     alpha_k_norm = norm(input.alpha_k)
                 end   
                 result = merge(result, (alpha_k_norm = alpha_k_norm,))
+            elseif sym == :alpha_k_norm_l1
+                if haskey(input, :gamma_k)
+                    alpha_k_norm_l1 = sum(abs.(gamma_to_alpha(input.gamma_k)))       
+                end
+                if haskey(input, :alpha_k)
+                    alpha_k_norm_l1 = sum(abs.((input.alpha_k)))
+                end   
+                result = merge(result, (alpha_k_norm_l1 = alpha_k_norm_l1,))
             elseif sym == :residual
                 result = merge(result, (residual = input.residual,))
             elseif sym == :residualnorm
