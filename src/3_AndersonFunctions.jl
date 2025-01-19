@@ -5,8 +5,6 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
         # Define the function for the :vanilla method
         return function(HS::VanillaHistoricalStuff, x_kp1::Vector{Float64}, x_k::Vector{Float64})
             # Update `x_kp1` and `x_k` using GFix!
-            GFix!(x_kp1, x_k)
-
             m = aamethod.methodparams.m
 
             GFix!(x_kp1,x_k)
