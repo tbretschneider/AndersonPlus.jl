@@ -57,7 +57,7 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
 
             # Dynamically append each field in liveanalysis
             for (field, value) in pairs(liveanalysis)
-                log_format *= " | $(AD[field]): %.4f"  # Add field name and placeholder
+                log_format *= " | $(AD[field]): %.4g"  # Add field name and placeholder
                 push!(log_values, value)
             end
 
