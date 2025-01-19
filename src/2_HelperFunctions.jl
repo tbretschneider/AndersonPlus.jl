@@ -100,7 +100,7 @@ end
 
 function initialise_historicalstuff(methodname::Symbol)
     if methodname == :vanilla
-        return VanillaHistoricalStuff([], [], 1)
+        return VanillaHistoricalStuff([], [], 0)
     else
         error("Unsupported AAMethod: $methodname")
     end
