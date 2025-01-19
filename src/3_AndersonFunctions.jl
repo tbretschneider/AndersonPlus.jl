@@ -29,7 +29,8 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 			println("ridgeregressionused")
                     gamma_k = ridge_regression(G_k, HS.residual[end])
                 end
-                x_kp1 = x_k .+ g_k .- (X_k + G_k) * gamma_k
+
+                x_kp1 .= x_k .+ g_k .- (X_k + G_k) * gamma_k
 
             else 
                 G_k = nothing
