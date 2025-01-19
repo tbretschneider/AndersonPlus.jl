@@ -25,6 +25,11 @@ function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
     return alpha
 end
 
+function gamma_to_alpha(x::Float64)
+    return isnan(x) ? NaN : x
+end
+
+
 function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AAConvParams)
 
     atol = tolparams.atol
