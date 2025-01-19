@@ -57,7 +57,7 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
 
             # Dynamically append each field in liveanalysis
             for (field, value) in pairs(liveanalysis)
-                log_format *= ", $(AD[field]): %.4f"  # Add field name and placeholder
+                log_format *= " | $(AD[field]): %.4f"  # Add field name and placeholder
                 push!(log_values, value)
             end
 
@@ -74,29 +74,48 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
     end
 end
 
-function output_postanalysis(postanalysis::NamedTuple,summary; line_width::Int = 80)
+const OUTPUT_DICT = Dict(
+    :methodname => "Method Name",
+    :methodparams => "Method Parameters",
+    :algorithmparams => "Algorithm Parameters",
+    :convparams => "Convergence Parameters",
+    :iterations => "Iterations"
+)
+
+function output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
     if summary
-        # Start the summary with a general description
-        summary = "Summary: "
+        # Print a line of asterisks
+        println("*" ^ line_width)
+
+        # Nicely formatted title for the summary
+        println("Summary:")
+        println("*" ^ line_width)
+
+        # Start the summary
+        summary_text = ""
 
         # Iterate through the fields of the NamedTuple
         for (field, value) in pairs(postanalysis)
-		if value isa Float64
-            # Append each field's name and value to the summary
-            summary *= @sprintf("%s is %.4f, ", string(field), value)
-	    	end
-		if value isa Int
-            # Append each field's name and value to the summary
-            summary *= @sprintf("%s is %04d, ", string(field), value)
-	    	end
+            field_name = get(OUTPUT_DICT, field, string(field))  # Get a descriptive name or fallback to the symbol
+            if value isa Float64
+                # Append field and value (float)
+                summary_text *= @sprintf("%s: %.4f\n", field_name, value)
+            elseif value isa Int
+                # Append field and value (int)
+                summary_text *= @sprintf("%s: %04d\n", field_name, value)
+            elseif value isa AbstractDict || value isa NamedTuple || value isa Vector
+                # For structured data, print a readable summary
+                summary_text *= @sprintf("%s: %s\n", field_name, string(value))
+            else
+                # Fallback for other types
+                summary_text *= @sprintf("%s: %s\n", field_name, string(value))
+            end
         end
-
-        # Remove the trailing comma and space, and add a period
 
         # Line wrapping: Break the summary into chunks of size `line_width`
         lines = []
         current_line = ""
-        for word in split(summary, " ")
+        for word in split(summary_text, " ")
             if length(current_line) + length(word) + 1 <= line_width
                 current_line *= (current_line == "" ? word : " " * word)
             else
@@ -110,6 +129,8 @@ function output_postanalysis(postanalysis::NamedTuple,summary; line_width::Int =
         for line in lines
             println(line)
         end
+
+        # Print closing line of asterisks
+        println("*" ^ line_width)
     end
 end
-
