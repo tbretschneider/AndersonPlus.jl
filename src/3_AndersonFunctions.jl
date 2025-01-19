@@ -31,9 +31,9 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 x_kp1 .= x_k .+ g_k .- (X_k + G_k) * gamma_k
 
             else 
-                G_k = nothing
-                gamma_k = nothing
-                X_k = nothing
+                G_k = NaN
+                gamma_k = NaN
+                X_k = NaN
                 push!(HS.solhist,copy(x_k))
             end
 

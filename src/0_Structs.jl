@@ -29,7 +29,6 @@ export AAAnalysis
 struct AAAnalysis
     liveanalysis::Vector{Symbol}
     midanalysis::Vector{Symbol} # Metrics to track (e.g., :residual, :iterations)
-    postanalysis::Vector{Symbol} # Metrics to track (e.g., :residual, :iterations)
     updatefreq::Int
     summary::Bool
 end

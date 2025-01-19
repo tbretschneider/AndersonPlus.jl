@@ -62,7 +62,7 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
             end
 
             # Add walltime to the end
-            log_format *= ", time: %.2f min"
+            log_format *= " | time: %.2f min"
             push!(log_values, (time() - startwalltime) / 60)
 
             # Create the final log string
