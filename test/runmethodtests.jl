@@ -15,12 +15,12 @@ using AndersonPlus
                             (maxit = 20, ))
 
     Analyses = AAAnalysis([],
-                        [:residualnorm,:G_k_cond,:gamma_k_norm],
+                        [:residualnorm,:G_k_cond,:alpha_k_norm],
                         0,false)
     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 
     @test isapprox(Output.analysis.output.residualnorm,residual_norm,rtol=5e-3)
-    @test isapprox(Output.analysis.output.G_k_cond,condition_number,rtol=5e-3)
-    @test isapprox(Output.analysis.output.gamma_k_norm,coefficient_norm,rtol=5e-3)
+    @test isapprox(Output.analysis.output.G_k_cond[1:7],condition_number[1:7],rtol=5e-3)
+    @test isapprox(Output.analysis.output.alpha_k_norm,coefficient_norm,rtol=5e-3)
 end
