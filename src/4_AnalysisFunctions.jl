@@ -41,23 +41,28 @@ end
 
 using Printf
 
+const AD = Dict(
+    :residualnorm => "Res Norm",
+    :residual_ratio => "Res Ratio"
+)
+
 
 function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefreq::Int, startwalltime::Float64)
     if updatefreq != 0
-        if (iterations % updatefreq == 0) && (iterations > 2)
+        if (iterations % updatefreq == 0) && (iterations > 1)
             # Start the format string and values with iteration count
-            log_format = "Iteration: %04d"
+            log_format = "%04d"
             log_values = []
             push!(log_values,iterations)
 
             # Dynamically append each field in liveanalysis
             for (field, value) in pairs(liveanalysis)
-                log_format *= ", $(string(field)): %.4f"  # Add field name and placeholder
+                log_format *= ", $(AD[field]): %.4f"  # Add field name and placeholder
                 push!(log_values, value)
             end
 
             # Add walltime to the end
-            log_format *= ", walltime: %.2f min"
+            log_format *= ", time: %.2f min"
             push!(log_values, (time() - startwalltime) / 60)
 
             # Create the final log string
