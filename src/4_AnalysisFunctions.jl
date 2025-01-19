@@ -74,68 +74,86 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
     end
 end
 
-const OUTPUT_DICT = Dict(
+const SD = Dict(
     :methodname => "Method Name",
     :methodparams => "Method Parameters",
     :algorithmparams => "Algorithm Parameters",
     :convparams => "Convergence Parameters",
     :iterations => "Iterations"
+    :vanilla => "Vanilla"
 )
 
-# Function to output the summary
+# Function to output the summary with line wrapping
 function output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
     if summary
         # Print a line of asterisks
         println("*" ^ line_width)
 
         # Nicely formatted title for the summary
-        println("Summary:")
-        println("*" ^ line_width)
-
-        # Print method name directly
-        println("Method Name: $(postanalysis.methodname)")
-
-        # Print Method Parameters
-        methodparams = postanalysis.methodparams
-        if !isempty(methodparams)
-            println("Method Parameters: $(methodparams)")
-        end
-
-        # Print Algorithm Parameters
-        algorithmparams = postanalysis.algorithmparams
-        if !isempty(algorithmparams)
-            println("Algorithm Parameters: $(algorithmparams)")
-        end
-
-        # Print Convergence Parameters (atol and rtol, only if non-zero)
-        convparams = postanalysis.convparams
-        if convparams.atol != 0.0 || convparams.rtol != 0.0
-            println("Convergence Parameters:")
-            if convparams.atol != 0.0
-                println("  atol: $(convparams.atol)")
+        summary_text = "Summary: $(postanalysis.methodname), with parameters: $(postanalysis.methodparams) and $(postanalysis.algorithmparams)."
+        
+        # Line wrapping: Break the summary into chunks of size `line_width`
+        lines = []
+        current_line = ""
+        for word in split(summary_text, " ")
+            if length(current_line) + length(word) + 1 <= line_width
+                current_line *= (current_line == "" ? word : " " * word)
+            else
+                push!(lines, current_line)
+                current_line = word
             end
-            if convparams.rtol != 0.0
-                println("  rtol: $(convparams.rtol)")
-            end
+        end
+        push!(lines, current_line)  # Add the last line
+
+        # Print each wrapped line
+        for line in lines
+            println(line)
         end
 
         # Print Iterations
         println("Iterations: $(lpad(postanalysis.iterations, 4, "0"))")
 
+        # Print Convergence Parameters (atol and rtol, only if non-zero)
+        convparams = postanalysis.convparams
+        if convparams.atol != 0.0 || convparams.rtol != 0.0
+            conv_str = "Convergence Parameters:"
+            if convparams.atol != 0.0
+                conv_str *= " atol: $(convparams.atol)"
+            end
+            if convparams.rtol != 0.0
+                conv_str *= " rtol: $(convparams.rtol)"
+            end
+
+            # Line wrap the convergence parameters
+            lines = []
+            current_line = ""
+            for word in split(conv_str, " ")
+                if length(current_line) + length(word) + 1 <= line_width
+                    current_line *= (current_line == "" ? word : " " * word)
+                else
+                    push!(lines, current_line)
+                    current_line = word
+                end
+            end
+            push!(lines, current_line)  # Add the last line
+
+            # Print each wrapped line of convergence parameters
+            for line in lines
+                println(line)
+            end
+        end
+
+        # Print closing line of asterisks
+        println("*" ^ line_width)
+
         # Iterate through the remaining fields and print them
         for (field, value) in pairs(postanalysis)
             if !(field in [:methodname, :methodparams, :algorithmparams, :convparams, :iterations])
-                field_name = get(OUTPUT_DICT, field, string(field))  # Get a descriptive name or fallback to the symbol
+                field_name = get(SD, field, string(field))  # Get a descriptive name or fallback to the symbol
                 if value isa Float64
                     println("$(field_name): $(@sprintf("%.4f", value))")
                 elseif value isa Int
                     println("$(field_name): $(lpad(value, 4, "0"))")
-                elseif value isa AbstractDict || value isa NamedTuple || value isa Vector
-                    # For structured data, print a readable summary
-                    println("$(field_name): $(string(value))")
-                else
-                    # Fallback for other types
-                    println("$(field_name): $(string(value))")
                 end
             end
         end
