@@ -82,6 +82,7 @@ const OUTPUT_DICT = Dict(
     :iterations => "Iterations"
 )
 
+# Function to output the summary
 function output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
     if summary
         # Print a line of asterisks
@@ -91,43 +92,52 @@ function output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int 
         println("Summary:")
         println("*" ^ line_width)
 
-        # Start the summary
-        summary_text = ""
+        # Print method name directly
+        println("Method Name: $(postanalysis.methodname)")
 
-        # Iterate through the fields of the NamedTuple
+        # Print Method Parameters
+        methodparams = postanalysis.methodparams
+        if !isempty(methodparams)
+            println("Method Parameters: $(methodparams)")
+        end
+
+        # Print Algorithm Parameters
+        algorithmparams = postanalysis.algorithmparams
+        if !isempty(algorithmparams)
+            println("Algorithm Parameters: $(algorithmparams)")
+        end
+
+        # Print Convergence Parameters (atol and rtol, only if non-zero)
+        convparams = postanalysis.convparams
+        if convparams.atol != 0.0 || convparams.rtol != 0.0
+            println("Convergence Parameters:")
+            if convparams.atol != 0.0
+                println("  atol: $(convparams.atol)")
+            end
+            if convparams.rtol != 0.0
+                println("  rtol: $(convparams.rtol)")
+            end
+        end
+
+        # Print Iterations
+        println("Iterations: $(lpad(postanalysis.iterations, 4, "0"))")
+
+        # Iterate through the remaining fields and print them
         for (field, value) in pairs(postanalysis)
-            field_name = get(OUTPUT_DICT, field, string(field))  # Get a descriptive name or fallback to the symbol
-            if value isa Float64
-                # Append field and value (float)
-                summary_text *= @sprintf("%s: %.4f\n", field_name, value)
-            elseif value isa Int
-                # Append field and value (int)
-                summary_text *= @sprintf("%s: %04d\n", field_name, value)
-            elseif value isa AbstractDict || value isa NamedTuple || value isa Vector
-                # For structured data, print a readable summary
-                summary_text *= @sprintf("%s: %s\n", field_name, string(value))
-            else
-                # Fallback for other types
-                summary_text *= @sprintf("%s: %s\n", field_name, string(value))
+            if !(field in [:methodname, :methodparams, :algorithmparams, :convparams, :iterations])
+                field_name = get(OUTPUT_DICT, field, string(field))  # Get a descriptive name or fallback to the symbol
+                if value isa Float64
+                    println("$(field_name): $(@sprintf("%.4f", value))")
+                elseif value isa Int
+                    println("$(field_name): $(lpad(value, 4, "0"))")
+                elseif value isa AbstractDict || value isa NamedTuple || value isa Vector
+                    # For structured data, print a readable summary
+                    println("$(field_name): $(string(value))")
+                else
+                    # Fallback for other types
+                    println("$(field_name): $(string(value))")
+                end
             end
-        end
-
-        # Line wrapping: Break the summary into chunks of size `line_width`
-        lines = []
-        current_line = ""
-        for word in split(summary_text, " ")
-            if length(current_line) + length(word) + 1 <= line_width
-                current_line *= (current_line == "" ? word : " " * word)
-            else
-                push!(lines, current_line)
-                current_line = word
-            end
-        end
-        push!(lines, current_line)  # Add the last line
-
-        # Print each line
-        for line in lines
-            println(line)
         end
 
         # Print closing line of asterisks
