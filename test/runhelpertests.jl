@@ -76,7 +76,7 @@ using AndersonPlus: nl_reflector!
     @test length(x) == 0  # Ensure the vector remains empty
 end
 
-function verify_qrp_reconstruction(QRP, deleted, A, tol)
+function verify_qrp_reconstruction(QRP, deleted, A; tol = 1e-12)
     Q, R, P = QRP.Q, QRP.R, QRP.P
     reconstructed = Q * R * P'
     norm_diff = norm(reconstructed - A) / norm(A)
@@ -91,19 +91,19 @@ using AndersonPlus: paqr_piv!, paqr_piv
     A = [1.0 2.0 3.0; 4.0 5.0 6.0; 7.0 8.0 10.0]
     QRP, deleted = paqr_piv!(A; tol=eps(eltype(A)))
     @test size(QRP.R) == (3, 3) # Check R shape
-    @test verify_qrp_reconstruction(QRP, deleted, A, tol=1e-12)
+    @test verify_qrp_reconstruction(QRP, deleted, A; tol=1e-12)
 
     # Test 2: Tall matrix (m > n)
     A = [1.0 2.0; 4.0 5.0; 7.0 8.0]
     QRP, deleted = paqr_piv!(A; tol=eps(eltype(A)))
     @test size(QRP.R) == (3, 2) # Check R shape
-    @test verify_qrp_reconstruction(QRP, deleted, A, tol=1e-12)
+    @test verify_qrp_reconstruction(QRP, deleted, A; tol=1e-12)
 
     # Test 3: Wide matrix (m < n)
     A = [1.0 2.0 3.0; 4.0 5.0 6.0]
     QRP, deleted = paqr_piv!(A; tol=eps(eltype(A)))
     @test size(QRP.R) == (2, 3) # Check R shape
-    @test verify_qrp_reconstruction(QRP, deleted, A, tol=1e-12)
+    @test verify_qrp_reconstruction(QRP, deleted, A; tol=1e-12)
 
     # Test 4: Rank-deficient matrix
     A = [1.0 2.0 3.0; 2.0 4.0 6.0; 3.0 6.0 9.0]
@@ -122,7 +122,7 @@ using AndersonPlus: paqr_piv!, paqr_piv
     A = [1.0; 2.0; 3.0]
     QRP, deleted = paqr_piv!(A; tol=eps(eltype(A)))
     @test size(QRP.R) == (3, 1)
-    @test verify_qrp_reconstruction(QRP, deleted, A, tol=1e-12)
+    @test verify_qrp_reconstruction(QRP, deleted, A; tol=1e-12)
 
     # Test 7: Tolerance affects rejection
     A = [1.0 2.0; 0.0 1e-15]
@@ -135,7 +135,7 @@ using AndersonPlus: paqr_piv!, paqr_piv
     A = rand(5, 3)
     QRP, deleted = paqr_piv!(A; tol=eps(eltype(A)))
     @test size(QRP.R) == (5, 3)
-    @test verify_qrp_reconstruction(QRP, deleted, A, tol=1e-12)
+    @test verify_qrp_reconstruction(QRP, deleted, A; tol=1e-12)
 
     # Test 9: paqr_piv non-mutating version
     A = [1.0 2.0; 3.0 4.0]
