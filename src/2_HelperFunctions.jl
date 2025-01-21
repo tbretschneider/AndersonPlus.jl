@@ -98,6 +98,74 @@ end
     safe_min^count * ξ1/ν
 end
 
+function paqr_piv(A::AbstractMatrix{T}, args...; kwargs...) where {T}
+    AA = copy(A)
+    paqr_piv!(AA, args...; kwargs...)
+end
+function paqr_piv!(A::AbstractMatrix{T}; tol=eps(T)) where {T}
+    m, n = size(A)
+    τ = zeros(T, min(m,n))
+    piv = Vector(UnitRange{LinearAlgebra.BlasInt}(1,n))
+    deleted = falses(n)  # Initialize the deleted vector
+
+    A_copy = copy(A)
+
+    k = 1
+    keep_count = 0
+    i = 1 # iterations in the first pass
+    while i <= min(m, n)
+        x = copy(A[k:m, k]) # copy to avoid mutating A on rejected columns
+        τk = nl_reflector!(x)
+        #println("--$i: $(norm(A[k:m, k])), $τk, $(abs(x[1]))")
+        # This is doing a fixed tolerance each time! We want to divide by norm of original vector.
+        #
+        #if abs(x[1]) >= tol
+        #
+        #So we compare abs(x[1]) >= tol * norm(A[:,k])
+        #println(abs(x[1]))
+        #println(sqrt(norm(A[1:k-1,k])^2+abs(x[1])^2))
+        #We also base it on history k
+        #println(τk)
+        if abs(x[1])/norm(A[:,k]) >= tol * (1+k^2)
+            τ[k] = τk
+            A[k:m, k] = x
+            LinearAlgebra.reflectorApply!(x, τk, view(A, k:m, k + 1:n))
+            k += 1
+            keep_count += 1
+        else
+            # rotate to the end
+            x = A[:, k]
+            #p = piv[k]
+            for j = k:n-1
+                A[:, j] = A[:, j+1]
+            #    piv[j] = piv[j+1]
+            end
+            A[:, n] = x
+            #piv[n] = p
+            deleted[i] = true
+        end
+
+        i += 1
+    end
+
+    # remaining columns are all rejects.  Don't pivot further, just compute valid R22
+    #while k <= min(m - 1 + !(T<:Real), n)
+    #    x = view(A, k:m, k)
+    #    τk = nl_reflector!(x)
+    #    τ[k] = τk
+    #    LinearAlgebra.reflectorApply!(x, τk, view(A, k:m, k + 1:n))
+    #    k += 1
+    #end
+
+    QRP = LinearAlgebra.QRPivoted{eltype(A[:,1:keep_count]), typeof(A[:,1:keep_count])}(A[:,1:keep_count], τ[1:keep_count], piv[1:keep_count])
+
+    #if verbose
+    #    println("--Relative reconstruction norm: $(opnorm(QRP.Q * QRP.R * QRP.P' - A_copy)/opnorm(A_copy))")
+    #end
+
+    return QRP, deleted
+end
+
 
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
