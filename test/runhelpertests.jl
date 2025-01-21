@@ -44,3 +44,33 @@ using AndersonPlus: checktolerances
     @test checktolerances(x1, y1, tolparams2) == false  # Both tolerances are zero
     @test checktolerances(x1, y1, tolparams3) == true   # Only atol is non-zero
 end
+
+using AndersonPlus: geometriccond
+
+@testset "Geometric Cond Tests" begin
+    # Test 1: Basic functionality with a 2x2 matrix
+    A = [1.0 2.0; 3.0 4.0]
+    col_norms = norm.(eachcol(A))
+    A_normalized = A ./ reshape(col_norms, (1, size(A, 2)))
+    @test geometriccond(A) ≈ cond(A_normalized)
+    
+    # Test 2: Identity matrix (condition number should be 1)
+    I = Matrix(I, 3, 3)
+    @test geometriccond(I) ≈ 1.0
+    
+    # Test 3: Singular matrix
+    B = [1.0 2.0; 2.0 4.0]  # Rank-deficient
+    @test geometriccond(B) ≈ Inf
+    
+    # Test 6: Single-column matrix
+    E = [1.0; 3.0]
+    col_norms = norm.(eachcol(E))
+    E_normalized = E ./ reshape(col_norms, (1, size(E, 2)))
+    @test geometriccond(E) ≈ cond(E_normalized)
+    
+    # Test 7: Large random matrix
+    F = rand(10, 20)
+    col_norms = norm.(eachcol(F))
+    F_normalized = F ./ reshape(col_norms, (1, size(F, 2)))
+    @test geometriccond(F) ≈ cond(F_normalized)
+end

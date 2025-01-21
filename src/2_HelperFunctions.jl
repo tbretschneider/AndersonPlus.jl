@@ -49,6 +49,18 @@ function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AACo
     return false
 end
 
+function geometriccond(A::AbstractMatrix)
+    
+    # Calculate the norm of each column
+    col_norms = norm.(eachcol(A))
+    
+    # Normalize the columns of A
+    A_normalized = A ./ reshape(col_norms, (1, size(A, 2)))
+    
+    # Calculate and return the condition number
+    return cond(A_normalized)
+end
+
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
     defaults = Dict(
@@ -105,7 +117,7 @@ end
 
 function initialise_historicalstuff(methodname::Symbol)
     if methodname == :vanilla
-        return VanillaHistoricalStuff([], [], 0)
+        return VanillaHistoricalStuff([], [], 0) # Carries Solhist and Residual and iterations...
     else
         error("Unsupported AAMethod: $methodname")
     end
