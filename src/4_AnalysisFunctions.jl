@@ -29,7 +29,7 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (alpha_k_norm_l1 = alpha_k_norm_l1,))
             elseif sym == :truehistlength
                 if haskey(input, :deleted)
-                    truehistlength = sum(.!deleted)
+                    truehistlength = sum(.!input.deleted)
                 end
                 result = merge(result, (truehistlength = truehistlength,))
             elseif sym == :G_cond
@@ -76,7 +76,7 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 result = merge(result, (alpha_k_norm_l1 = alpha_k_norm_l1,))
             elseif sym == :truehistlength
                 if haskey(input, :deleted)
-                    truehistlength = sum(.!deleted)
+                    truehistlength = sum(.!input.deleted)
                 end
                 result = merge(result, (truehistlength = truehistlength,))
             elseif sym == :G_cond
