@@ -15,7 +15,7 @@ using AndersonPlus
                             (maxit = 20, ))
 
     Analyses = AAAnalysis([],
-                        [:residualnorm,:G_k_cond,:alpha_k_norm_l1,:G_k_geocond],
+                        [:residualnorm,:G_k_cond,:alpha_k_norm_l1],
                         0,false)
     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))

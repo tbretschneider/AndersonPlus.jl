@@ -65,6 +65,40 @@ function geometriccond(x::Float64)
     return isnan(x) ? NaN : x
 end
 
+@inline function nl_reflector!(x::AbstractVector{T}) where {T}
+    n = length(x)
+    n == 0 && return zero(eltype(x))
+    @inbounds begin
+        ξ1 = x[1]
+        normu = norm(x)
+        if iszero(normu)
+            return zero(ξ1/normu)
+        end
+
+        safe_min = ((1/prevfloat(T(Inf))) * (T(1.0) + 4*eps(T)))/eps(T)
+        inv_safe_min = inv(safe_min)
+        count = 0
+        while normu < safe_min && count < 20
+            count += 1
+            x *= inv_safe_min
+            normu *= inv_safe_min
+        end
+        if count > 0
+            ξ1 = x[1]
+            normu = norm(x)
+        end
+
+        ν = T(copysign(normu, real(ξ1)))
+        ξ1 += ν
+        x[1] = -ν
+        for i = 2:n
+            x[i] /= ξ1
+        end
+    end
+    safe_min^count * ξ1/ν
+end
+
+
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
     defaults = Dict(
