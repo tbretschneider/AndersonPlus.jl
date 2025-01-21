@@ -81,9 +81,9 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 α = RT_R \ ones_vec  # Solves the system without computing the inverse
         
                 # Step 2: Normalize α
-                α_normalized = α / sum(α)
+                alpha_k = α / sum(α)
                 
-                x_kp1 .= hcat(HS.F...)*α_normalized
+                x_kp1 .= hcat(HS.F...)*alpha_k
             
             else
                 deleted = falses(1)
@@ -96,9 +96,9 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             HS.iterations += 1
 
-            midanalysisin = (residual = HS.residual[end],G = HS.G,deleted = deleted,alpha_k = α_normalized)
+            midanalysisin = (residual = HS.residual[end],G = HS.G,deleted = deleted,alpha_k = alpha_k)
 
-            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = HS.solhist[end-1],residual = HS.residual,G = HS.G,deleted = deleted,alpha_k= α_normalized)
+            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = HS.solhist[end-1],residual = HS.residual,G = HS.G,deleted = deleted,alpha_k= alpha_k)
 
             midanalysis = midanalysisfunc(midanalysisin)
 
