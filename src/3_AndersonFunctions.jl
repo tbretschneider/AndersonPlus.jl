@@ -92,8 +92,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             end
                 
             # Now updating the x_k and the x_kp1
-            x_k .= copy(x_kp1)
-            push!(HS.solhist,x_k)
+            push!(HS.solhist,copy(x_kp1))
 
             HS.iterations += 1
 
