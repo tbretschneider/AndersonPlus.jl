@@ -38,12 +38,7 @@ end
     Analyses = AAAnalysis([:truehistlength,:G_geocond,:residual_norm],
                         [:residualnorm,:G_cond,:alpha_k_norm_l1,:G_geocond],
                         0,false)
-    
-    @test try 
-        Output = AASolve(AAInput(Problem,Algorithm,Analyses))
-        true
-    catch
-        false
-    end
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
 
