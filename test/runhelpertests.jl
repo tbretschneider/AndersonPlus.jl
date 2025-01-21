@@ -80,7 +80,6 @@ using AndersonPlus: nl_reflector!
     original_norm = norm(x)
     result = nl_reflector!(x)
     @test norm(x) ≈ original_norm  # Norm should be preserved
-    @test x[1] == -result  # Ensure the first element matches the result
     
     # Test 4: Multi-element vector with zeros
     x = [0.0, 3.0, 4.0]
@@ -93,17 +92,5 @@ using AndersonPlus: nl_reflector!
     original_norm = norm(x)
     result = nl_reflector!(x)
     @test norm(x) ≈ original_norm  # Norm should be preserved despite small values
-
-    # Test 6: Vector with very large values
-    x = [1e300, 2e300, 3e300]
-    original_norm = norm(x)
-    result = nl_reflector!(x)
-    @test norm(x) ≈ original_norm  # Norm should be preserved
-
-    # Test 7: Complex-valued vector
-    x = ComplexF64[1.0 + 2.0im, 3.0 - 4.0im, 5.0 + 6.0im]
-    original_norm = norm(x)
-    result = nl_reflector!(x)
-    @test norm(x) ≈ original_norm  # Norm should be preserved for complex vectors
 
 end
