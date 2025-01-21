@@ -46,6 +46,7 @@ using AndersonPlus: checktolerances
 end
 
 using AndersonPlus: geometriccond
+using LinearAlgebra
 
 @testset "Geometric Cond Tests" begin
     # Test 1: Basic functionality with a 2x2 matrix

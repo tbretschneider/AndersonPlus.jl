@@ -1,6 +1,7 @@
 module AndersonPlus
 
 import LinearAlgebra
+using LinearAlgebra
 
 export greet_your_package_name, p1_f!, p1_f, AASolve
 include("0_Structs.jl")
