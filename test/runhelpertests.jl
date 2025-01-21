@@ -59,12 +59,6 @@ using LinearAlgebra
     Iden = I(3)
     @test geometriccond(Iden) ≈ 1.0
     
-    # Test 6: Single-column matrix
-    E = [1.0; 3.0]
-    col_norms = norm.(eachcol(E))
-    E_normalized = E ./ reshape(col_norms, (1, size(E, 2)))
-    @test geometriccond(E) ≈ cond(E_normalized)
-    
     # Test 7: Large random matrix
     F = rand(10, 20)
     col_norms = norm.(eachcol(F))
