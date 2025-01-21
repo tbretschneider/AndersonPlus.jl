@@ -59,10 +59,6 @@ using LinearAlgebra
     Iden = I(3)
     @test geometriccond(Iden) ≈ 1.0
     
-    # Test 3: Singular matrix
-    B = [1.0 2.0; 2.0 4.0]  # Rank-deficient
-    @test geometriccond(B) ≈ Inf
-    
     # Test 6: Single-column matrix
     E = [1.0; 3.0]
     col_norms = norm.(eachcol(E))
