@@ -61,6 +61,10 @@ function geometriccond(A::AbstractMatrix)
     return cond(A_normalized)
 end
 
+function geometriccond(x::Float64)
+    return isnan(x) ? NaN : x
+end
+
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
     defaults = Dict(
