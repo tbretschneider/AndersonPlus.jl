@@ -88,6 +88,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             else
                 deleted = falses(1)
                 alpha_k = [1.0]
+                push!(HS.solhist,copy(x_k))
             end
                 
             # Now updating the x_k and the x_kp1
