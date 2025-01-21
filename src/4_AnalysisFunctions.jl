@@ -7,6 +7,8 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
         for sym in midanalysis
             if sym == :G_k_cond
                 result = merge(result, (G_k_cond = cond(input.G_k),))
+            elseif sym == :G_k_geocond
+                result = merge(result, (G_k_geocond = geometriccond(input.G_k),))
             elseif sym == :gamma_k_norm
                 result = merge(result, (gamma_k_norm = norm(input.gamma_k),))
             elseif sym == :alpha_k_norm
