@@ -67,7 +67,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 insert!(HS.F,1,copy(x_kp1))
                     
             #For larger iterations.
-            if (iterations > 0)
+            if (HS.iterations > 0)
                 
                 QRP,deleted = paqr_piv!(hcat(HS.G...);tol = tolerance)
                 
