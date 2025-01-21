@@ -55,6 +55,58 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             return midanalysis, liveanalysis
         end
+    elseif aa.method.methodname == :paqr
+        return function(HS::PAQRHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})  
+                #Selecting parameters...
+            tolerance = aamethod.methodparams.threshold
+            
+                GFix!(x_kp1,x_k)
+                g_k = x_kp1 .- x_k
+                push!(HS.residual, copy(g_k))
+                insert!(HS.G,1,copy(g_k))
+                insert!(HS.F,1,copy(x_kp1))
+                    
+            #For larger iterations.
+            if (iterations > 0)
+                
+                QRP,deleted = paqr_piv!(hcat(HS.G...);tol = tolerance)
+                
+                deleteat!(HS.G,deleted)
+                deleteat!(HS.F,deleted)
+                
+                R = QRP.R
+                
+                RT_R = R' * R
+                ones_vec = ones(size(QRP.R, 1))
+                α = RT_R \ ones_vec  # Solves the system without computing the inverse
+        
+                # Step 2: Normalize α
+                α_normalized = α / sum(α)
+                
+                x_kp1 .= hcat(HS.F...)*α_normalized
+            
+            else
+                deleted = falses(1)
+                alpha_k = [1.0]
+            end
+                
+            # Now updating the x_k and the x_kp1
+            x_k .= copy(x_kp1)
+            push!(HS.solhist,x_k)
+
+            HS.iterations += 1
+
+            midanalysisin = (residual = HS.residual[end],G = HS.G,deleted = deleted,alpha_k = α_normalized)
+
+            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = HS.solhist[end-1],residual = HS.residual,G = HS.G,deleted = deleted,alpha_k= α_normalized)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+        
+            #Updates Go Here - ridge doesn't really make sense for this. Need to simplify code to get rid of it!
+            return (midanalysis,liveanalysis)
+        end
     else
         error("Unsupported methodname: $(aamethod.methodname)")
     end

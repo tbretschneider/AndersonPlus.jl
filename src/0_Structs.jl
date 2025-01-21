@@ -59,3 +59,11 @@ mutable struct VanillaHistoricalStuff <: HistoricalStuff
     solhist::Vector{Vector{Float64}}
     iterations::Int
 end
+
+mutable struct PAQRHistoricalStuff <: HistoricalStuff
+    residual::Vector{Vector{Float64}}
+    solhist::Vector{Vector{Float64}}
+    G::Vector{Vector{Float64}}
+    F::Vector{Vector{Float64}}
+    iterations::Int
+end

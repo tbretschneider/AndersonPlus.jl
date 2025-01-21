@@ -171,6 +171,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
     defaults = Dict(
         :vanilla => (m = 2),
+        :paqr => (threshold = 1e-5),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -191,6 +192,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Map method parameters to their expected structure
     param_mappings = Dict(
         :vanilla => [:m],
+        :paqr => [:threshold],
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -205,7 +207,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :thresh => [:beta, :percentvariance],
         :anglefilter => [:beta, :anglethreshold, :hardcutoff],
         :faa => [:beta, :cs, :cond, :hardcutoff],
-        :hdexplicit => [:beta, :threshold]
+        :hdexplicit => [:beta, :threshold],
     )
 
     # Handle the case where no parameters are provided
@@ -223,7 +225,9 @@ end
 
 function initialise_historicalstuff(methodname::Symbol)
     if methodname == :vanilla
-        return VanillaHistoricalStuff([], [], 0) # Carries Solhist and Residual and iterations...
+        return VanillaHistoricalStuff([],[],0) # Carries Solhist and Residual and iterations...
+    elseif methodname == :paqr
+        return PAQRHistoricalStuff([],[],[],[],0)
     else
         error("Unsupported AAMethod: $methodname")
     end

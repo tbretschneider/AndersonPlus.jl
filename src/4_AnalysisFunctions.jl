@@ -27,6 +27,15 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                     alpha_k_norm_l1 = sum(abs.((input.alpha_k)))
                 end   
                 result = merge(result, (alpha_k_norm_l1 = alpha_k_norm_l1,))
+            elseif sym == :truehistlength
+                if haskey(input, :deleted)
+                    truehistlength = sum(.!deleted)
+                end
+                result = merge(result, (truehistlength = truehistlength,))
+            elseif sym == :G_cond
+                result = merge(result, (G_cond = cond(hcat(input.G...)),))
+            elseif sym == :G_geocond
+                result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
             elseif sym == :residual
                 result = merge(result, (residual = input.residual,))
             elseif sym == :residualnorm
@@ -49,6 +58,31 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 result = merge(result, (residualnorm = norm(input.x_k.-input.x_kp1),))
             elseif sym == :residual_ratio
                 result = merge(result, (residual_ratio = norm(input.x_k.-input.x_kp1)/input.residual[end],))
+            elseif sym == :alpha_k_norm
+                if haskey(input, :gamma_k)
+                    alpha_k_norm = norm(gamma_to_alpha(input.gamma_k))            
+                end
+                if haskey(input, :alpha_k)
+                    alpha_k_norm = norm(input.alpha_k)
+                end   
+                result = merge(result, (alpha_k_norm = alpha_k_norm,))
+            elseif sym == :alpha_k_norm_l1
+                if haskey(input, :gamma_k)
+                    alpha_k_norm_l1 = sum(abs.(gamma_to_alpha(input.gamma_k)))       
+                end
+                if haskey(input, :alpha_k)
+                    alpha_k_norm_l1 = sum(abs.((input.alpha_k)))
+                end   
+                result = merge(result, (alpha_k_norm_l1 = alpha_k_norm_l1,))
+            elseif sym == :truehistlength
+                if haskey(input, :deleted)
+                    truehistlength = sum(.!deleted)
+                end
+                result = merge(result, (truehistlength = truehistlength,))
+            elseif sym == :G_cond
+                result = merge(result, (G_cond = cond(hcat(input.G...)),))
+            elseif sym == :G_geocond
+                result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
             end
         end
 
