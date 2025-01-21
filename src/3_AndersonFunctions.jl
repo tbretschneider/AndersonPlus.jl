@@ -55,7 +55,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             return midanalysis, liveanalysis
         end
-    elseif aa.method.methodname == :paqr
+    elseif aamethod.methodname == :paqr
         return function(HS::PAQRHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})  
                 #Selecting parameters...
             tolerance = aamethod.methodparams.threshold
