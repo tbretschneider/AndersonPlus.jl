@@ -95,7 +95,12 @@ using Printf
 
 const AD = Dict(
     :residualnorm => "Res Norm",
-    :residual_ratio => "Res Ratio"
+    :residual_ratio => "Res Ratio",
+    :alpha_k_norm => "Coeff. Norm",
+    :alpha_k_norm => "Coeff. Norm L1",
+    :truehistlength => "Effective m",
+    :G_cond => "G Condition",
+    :G_geocond => "G Geometric Condition"
 )
 
 
@@ -132,7 +137,8 @@ const SD = Dict(
     :algorithmparams => "Algorithm Parameters",
     :convparams => "Convergence Parameters",
     :iterations => "Iterations",
-    :vanilla => "Vanilla"
+    :vanilla => "Vanilla",
+    :paqr => "Pivoting Avoiding QR"
 )
 
 # Function to output the summary with line wrapping
