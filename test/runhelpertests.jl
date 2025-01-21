@@ -56,8 +56,8 @@ using LinearAlgebra
     @test geometriccond(A) ≈ cond(A_normalized)
     
     # Test 2: Identity matrix (condition number should be 1)
-    I = Matrix(I, 3, 3)
-    @test geometriccond(I) ≈ 1.0
+    Iden = I(3)
+    @test geometriccond(Iden) ≈ 1.0
     
     # Test 3: Singular matrix
     B = [1.0 2.0; 2.0 4.0]  # Rank-deficient
