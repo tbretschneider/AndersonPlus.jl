@@ -138,7 +138,8 @@ const SD = Dict(
     :convparams => "Convergence Parameters",
     :iterations => "Iterations",
     :vanilla => "Vanilla",
-    :paqr => "Pivoting Avoiding QR"
+    :paqr => "Pivoting Avoiding QR",
+    :faa => "Filtered (Pollock)"
 )
 
 # Function to output the summary with line wrapping

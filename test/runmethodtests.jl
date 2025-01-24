@@ -42,3 +42,21 @@ end
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
 
+@testset "FAA Analysis" begin
+    x0 = ones(500)
+
+    Problem = AAProblem(p2_f!,
+                        x0,
+                        AAConvParams(1e-10, 0))
+    
+    Algorithm = AAAlgorithm(AAMethod(:faa,(m=10,cs = 0.1, kappabar = 1 )),
+                            (maxit = 20, ))
+
+    Analyses = AAAnalysis([:residualnorm],
+                        [:residualnorm],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
+

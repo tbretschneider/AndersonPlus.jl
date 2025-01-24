@@ -67,3 +67,15 @@ mutable struct PAQRHistoricalStuff <: HistoricalStuff
     F::Vector{Vector{Float64}}
     iterations::Int
 end
+
+mutable struct FAAHistoricalStuff <: HistoricalStuff
+    G_k::Matrix{Float64}  # Matrix of Float64
+    X_k::Matrix{Float64}  # Matrix of Float64
+    g_km1::Vector{Float64}  # Vector of Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function FAAHistoricalStuff()
+        new(Matrix{Float64}(), Matrix{Float64}(), Vector{Float64}(), 0)
+    end
+end

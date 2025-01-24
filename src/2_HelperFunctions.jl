@@ -166,12 +166,100 @@ function paqr_piv!(A::AbstractMatrix{T}; tol=eps(T)) where {T}
     return QRP, deleted
 end
 
+##################### Pollock Functions #################################
+
+
+function AngleFiltering!(G_k, X_k, cs)
+    X_krev = X_k[:,end:-1:1]
+    G_krev = G_k[:,end:-1:1]
+        # Perform QR decomposition of F
+    Q, R = qr(G_krev)
+    
+    # Compute sigma values
+    sigma = zeros(Float64, size(G_krev, 2))
+    for i in 1:length(sigma)
+        sigma[i] = abs(R[i,i]) / norm(G_krev[:,i])
+    end
+    
+    # Find indices where sigma > cs
+    indicesKeep = findall(sigma .> cs)
+    
+    # Update E and F by keeping only the selected columns
+    X_krev = X_krev[:, indicesKeep]
+    G_krev = G_krev[:, indicesKeep]
+    
+    # Update m to the new size of E
+
+    X_k .= X_krev[:,end:-1:1]
+    G_k .= G_krev[:,end:-1:1]
+end
+
+
+function LengthFiltering!(G_k, X_k, cs, kappabar)
+    X_krev = X_k[:,end:-1:1]
+    G_krev = G_k[:,end:-1:1]
+
+    ct = sqrt(1 - cs^2)
+
+    # Initialize column norms of F
+    ncol = size(G_krev, 2)
+    G_krevnormi = zeros(Float64, ncol)
+    
+    for i in 1:ncol
+        G_krevnormi[i] = norm(G_krev[:, i])
+    end
+    
+    # Initialize b array
+    b = zeros(Float64, ncol)
+    
+    # First two b values
+    b[1] = 1 / (G_krevnormi[1]^2)
+    if ncol > 1
+    b[2] = 1 / cs^2 * (ct^2 / (G_krevnormi[1]^2) + 1 / (G_krevnormi[2]^2))
+    end
+
+    if ncol > 2
+    # Compute subsequent b values
+    for j in 3:ncol
+        term1 = ct^2 * (ct + cs)^(2 * (j - 2)) / (G_krevnormi[1]^2 * cs^(2 * (j - 2)))
+        
+        term2 = 0.0
+        for i in 2:(j-1)
+            term2 += ct^2 * (ct + cs)^(2 * (j - i - 1)) / (G_krevnormi[i]^2 * cs^(2 * (j - i)))
+        end
+        
+        term3 = 1 / (G_krevnormi[j]^2)
+        
+        b[j] = 1 / cs^2 * (term1 + term2 + term3)
+    end
+
+    end
+
+    # Iterate to find the correct value of m
+    dumk = 0
+    for k in ncol:-1:1
+        Cf = sum(G_krevnormi[1:k].^2) * sum(b[1:k])
+        
+        if Cf < kappabar^2
+            dumk = k
+            break
+        end
+    end
+    
+    # Update m
+    X_krev = X_krev[:, 1:dumk]
+    G_krev = G_krev[:, 1:dumk]
+
+    X_k .= X_krev[:,end:-1:1]
+    G_k .= G_krev[:,end:-1:1]
+end
 
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
     defaults = Dict(
         :vanilla => (m = 2),
         :paqr => (threshold = 1e-5),
+        :faa => (cs = 0.1, kappabar = 1, m = 20),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -193,6 +281,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     param_mappings = Dict(
         :vanilla => [:m],
         :paqr => [:threshold],
+        :faa => [:cs, :kappabar, :m]
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -228,6 +317,8 @@ function initialise_historicalstuff(methodname::Symbol)
         return VanillaHistoricalStuff([],[],0) # Carries Solhist and Residual and iterations...
     elseif methodname == :paqr
         return PAQRHistoricalStuff([],[],[],[],0)
+    elseif methodname == :faa
+        return FAAHistoricalStuff()
     else
         error("Unsupported AAMethod: $methodname")
     end
