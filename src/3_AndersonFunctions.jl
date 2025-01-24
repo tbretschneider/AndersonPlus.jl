@@ -140,7 +140,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 x_kp1 .= x_kp1 - (HS.X_k + HS.G_k)*gamma_k
 
             elseif HS.iterations == 0
-
+                gamma_k = NaN
             end
             
             HS.X_k .= hcat(x_kp1 - x_k,HS.X_k)
