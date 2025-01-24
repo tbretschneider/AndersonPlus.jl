@@ -76,6 +76,6 @@ mutable struct FAAHistoricalStuff <: HistoricalStuff
 
     # Constructor with default empty values
     function FAAHistoricalStuff()
-        new(Matrix{Float64}(), Matrix{Float64}(), Vector{Float64}(), 0)
+        new(Matrix{Float64}(undef,0,0), Matrix{Float64}(undef,0,0), Vector{Float64}(), 0)
     end
 end
