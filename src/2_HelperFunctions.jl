@@ -126,7 +126,7 @@ function paqr_piv!(A::AbstractMatrix{T}; tol=eps(T)) where {T}
         #println(sqrt(norm(A[1:k-1,k])^2+abs(x[1])^2))
         #We also base it on history k
         #println(τk)
-        if abs(x[1])/norm(A[:,k]) >= tol * (1+k^2)
+        if abs(x[1])/norm(A[:,k]) >= tol
             τ[k] = τk
             A[k:m, k] = x
             LinearAlgebra.reflectorApply!(x, τk, view(A, k:m, k + 1:n))

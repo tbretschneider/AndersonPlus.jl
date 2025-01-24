@@ -70,6 +70,8 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             if (HS.iterations > 0)
                 
                 QRP,deleted = paqr_piv!(hcat(HS.G...);tol = tolerance)
+
+		@bp
                 
                 deleteat!(HS.G,deleted)
                 deleteat!(HS.F,deleted)
