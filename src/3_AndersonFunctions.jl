@@ -146,6 +146,8 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             HS.X_k .= hcat(x_kp1 - x_k,HS.X_k)
             HS.g_km1 .= g_k
 
+            HS.iterations += 1
+
             midanalysisin = (gamma_k = gamma_k, residual = g_k)
 
             liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
