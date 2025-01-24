@@ -83,7 +83,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 # Step 2: Normalize α
                 alpha_k = α / sum(α)
                 
-                x_kp1 .= hcat(HS.F...)*alpha_k
+                x_kp1 .= hcat(HS.F...) * alpha_k
             
             else
                 deleted = falses(1)
