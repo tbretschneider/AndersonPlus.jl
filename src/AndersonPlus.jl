@@ -5,7 +5,7 @@ using LinearAlgebra
 
 export greet_your_package_name, AASolve
 
-p1_f!, p2_f!, p3_f!
+export p1_f!, p2_f!
 include("0_Structs.jl")
 include("2_HelperFunctions.jl")
 include("3_AndersonFunctions.jl")
