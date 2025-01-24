@@ -75,7 +75,7 @@ mutable struct FAAHistoricalStuff <: HistoricalStuff
     iterations::Int  # Integer
 
     # Constructor with default empty values
-    function FAAHistoricalStuff()
-        new(Matrix{Float64}(undef,0,0), Matrix{Float64}(undef,0,0), Vector{Float64}(), 0)
+    function FAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), Vector{Float64}(undef,numrows), 0)
     end
 end

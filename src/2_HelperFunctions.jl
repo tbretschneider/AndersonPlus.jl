@@ -312,13 +312,13 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     return AAMethod(method, params)
 end
 
-function initialise_historicalstuff(methodname::Symbol)
+function initialise_historicalstuff(methodname::Symbol,x_k::Vector)
     if methodname == :vanilla
         return VanillaHistoricalStuff([],[],0) # Carries Solhist and Residual and iterations...
     elseif methodname == :paqr
         return PAQRHistoricalStuff([],[],[],[],0)
     elseif methodname == :faa
-        return FAAHistoricalStuff()
+        return FAAHistoricalStuff(length(x_k))
     else
         error("Unsupported AAMethod: $methodname")
     end
