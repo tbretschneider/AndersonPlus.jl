@@ -325,3 +325,9 @@ function AAAnalysisOutput(input::AAInput,fullmidanalysis::Vector{Any},iterations
 
     return AAAnalysisOutput(output)
 end
+
+import Base: !
+
+function !(x::AbstractFloat)
+	    isnan(x) ? NaN : !Bool(x)
+end

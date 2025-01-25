@@ -31,6 +31,9 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 if haskey(input, :deleted)
                     truehistlength = sum(.!input.deleted)
                 end
+                if haskey(input, :filtered)
+                    truehistlength = sum(.!input.filtered)
+                end
                 result = merge(result, (truehistlength = truehistlength,))
 		elseif sym == :filtered
 		result = merge(result, (filtered = input.filtered,))
@@ -79,6 +82,9 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
             elseif sym == :truehistlength
                 if haskey(input, :deleted)
                     truehistlength = sum(.!input.deleted)
+                end
+                if haskey(input, :filtered)
+                    truehistlength = sum(.!input.filtered)
                 end
                 result = merge(result, (truehistlength = truehistlength,))
             elseif sym == :G_cond
