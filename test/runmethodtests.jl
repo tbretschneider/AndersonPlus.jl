@@ -59,4 +59,35 @@ end
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
 
+@testset "FAA Analysis Test 3" begin
+    # Parameters
+    k0 = 8.0
+    N = 2000
+    x_start = 0.0
+    x_end = 10.0
+    x = range(x_start, x_end, length=N+1)
+
+    function p3_f!(G,u)
+        G .= p3_f_helper!(u, k0, ε, N)
+    end
+
+    u_re = cos.(k0 * x)
+    u_im = sin.(k0 * x)
+    x0 = vcat(u_re, u_im); # Concatenate into a single vector
+
+    Problem = AAProblem(p3_f!,
+                        x0,
+                        AAConvParams(1e-10, 0))
+    
+    Algorithm = AAAlgorithm(AAMethod(:faa,(m=10,cs = 0.01, kappabar = 1 )),
+                            (maxit = 20, ))
+
+    Analyses = AAAnalysis([:residualnorm],
+                        [:residualnorm],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
+
 
