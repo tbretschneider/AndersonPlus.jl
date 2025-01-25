@@ -125,14 +125,15 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 end
 		println(size(HS.G_k,2))
 		println(size(HS.X_k,2))
-                filtered = LengthFiltering!(HS.G_k, HS.X_k, 
+                filtered = LengthFiltering!(HS, 
                 aamethod.methodparams.cs, aamethod.methodparams.kappabar)
 		println(size(HS.X_k,2))
 		println(size(HS.G_k,2))
 		println(filtered)
-                anglefiltered = AngleFiltering!(HS.G_k, HS.X_k, aamethod.methodparams.cs)
+                anglefiltered = AngleFiltering!(HS, aamethod.methodparams.cs)
 		println(anglefiltered)
-
+        println(size(HS.X_k,2))
+		println(size(HS.G_k,2))
 		filtered[.!filtered] .= anglefiltered
 
                 gamma_k = HS.G_k \ g_k

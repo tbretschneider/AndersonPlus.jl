@@ -169,7 +169,9 @@ end
 ##################### Pollock Functions #################################
 
 
-function AngleFiltering!(G_k, X_k, cs)
+function AngleFiltering!(HS, cs)
+    X_k = HS.X_k
+    G_k = HS.G_k
         # Perform QR decomposition of F
     Q, R = qr(G_k)
     
@@ -184,18 +186,18 @@ function AngleFiltering!(G_k, X_k, cs)
     kept = falses(size(X_k,2))
     
     # Update E and F by keeping only the selected columns
-    X_k = X_k[:, indicesKeep]
-    G_k = G_k[:, indicesKeep]
+    HS.X_k = X_k[:, indicesKeep]
+    HS.G_k = G_k[:, indicesKeep]
     
     # Update m to the new size of E
     kept[indicesKeep] .= true
 
-    X_k .= X_k[:,end:-1:1]
-    G_k .= G_k[:,end:-1:1]
     return .!kept
 end
 
-function LengthFiltering!(G_k,X_k,cs,kappabar)
+function LengthFiltering!(HS,cs,kappabar)
+    X_k = HS.X_k
+    G_k = HS.G_k
     ct = sqrt(1 - cs^2)
     ncol = size(G_k, 2)
 
@@ -229,8 +231,8 @@ function LengthFiltering!(G_k,X_k,cs,kappabar)
     filtered = trues(size(X_k,2))
 
     # Resize X_k and G_k in place by reassigning sliced views
-    X_k .= X_k[:, 1:m]
-    G_k .= G_k[:, 1:m]
+    HS.X_k = X_k[:, 1:m]
+    HS.G_k = G_k[:, 1:m]
 
     filtered[1:m] .= false
     return filtered
