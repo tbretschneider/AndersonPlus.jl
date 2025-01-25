@@ -67,10 +67,6 @@ end
     x_end = 10.0
     x = range(x_start, x_end, length=N+1)
 
-    function p3_f!(G,u)
-        G .= p3_f_helper!(u, k0, ε, N)
-    end
-
     u_re = cos.(k0 * x)
     u_im = sin.(k0 * x)
     x0 = vcat(u_re, u_im); # Concatenate into a single vector
