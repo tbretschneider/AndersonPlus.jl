@@ -32,6 +32,8 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                     truehistlength = sum(.!input.deleted)
                 end
                 result = merge(result, (truehistlength = truehistlength,))
+		elseif sym == :filtered
+		result = merge(result, (filtered = input.filtered,))
             elseif sym == :G_cond
                 result = merge(result, (G_cond = cond(hcat(input.G...)),))
             elseif sym == :G_geocond

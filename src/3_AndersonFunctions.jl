@@ -115,42 +115,51 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
             m = aamethod.methodparams.m
+	   
 
             if HS.iterations > 1
-                HS.G_k .= hcat(g_k - HS.g_km1,HS.G_k)
-
+                HS.G_k = hcat(g_k - HS.g_km1,HS.G_k)
                 if size(HS.G_k,2) > m - 1
-                    HS.G_k .= HS.G_k[:,1:m-1]
-                    HS.X_k .= HS.X_k[:,1:m-1]
+                    HS.G_k = HS.G_k[:,1:m-1]
+                    HS.X_k = HS.X_k[:,1:m-1]
                 end
-
-                LengthFiltering!(HS.G_k, HS.X_k, 
+		println(size(HS.G_k,2))
+		println(size(HS.X_k,2))
+                filtered = LengthFiltering!(HS.G_k, HS.X_k, 
                 aamethod.methodparams.cs, aamethod.methodparams.kappabar)
-                AngleFiltering!(HS.G_k, HS.X_k, aamethod.methodparams.cs)
+		println(size(HS.X_k,2))
+		println(size(HS.G_k,2))
+		println(filtered)
+                anglefiltered = AngleFiltering!(HS.G_k, HS.X_k, aamethod.methodparams.cs)
+		println(anglefiltered)
+
+		filtered[.!filtered] .= anglefiltered
 
                 gamma_k = HS.G_k \ g_k
                         
-                x_kp1 .= x_k .+ g_k .- (X_k + G_k) * gamma_k 
+                x_kp1 .= x_k .+ g_k .- (HS.X_k + HS.G_k) * gamma_k 
 
             elseif HS.iterations == 1
-                HS.G_k .= hcat(g_k - HS.g_km1,HS.G_k)
+                HS.G_k = hcat(g_k - HS.g_km1,HS.G_k)
 
                 gamma_k = (HS.G_k'*HS.G_k)^(-1)*(HS.G_k'*g_k)
 
-                x_kp1 .= x_kp1 - (HS.X_k + HS.G_k)*gamma_k
+                x_kp1 = x_kp1 - (HS.X_k + HS.G_k)*gamma_k
+
+		filtered = NaN
 
             elseif HS.iterations == 0
                 gamma_k = NaN
+		filtered = NaN
             end
             
-            HS.X_k .= hcat(x_kp1 - x_k,HS.X_k)
-            HS.g_km1 .= g_k
-
+            HS.X_k = hcat(x_kp1 - x_k,HS.X_k)
+            HS.g_km1 = g_k
             HS.iterations += 1
 
-            midanalysisin = (gamma_k = gamma_k, residual = g_k)
+            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered)
 
-            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+            liveanalysisin = (X_k = HS.X_k, filtered = filtered, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
 
             midanalysis = midanalysisfunc(midanalysisin)
 

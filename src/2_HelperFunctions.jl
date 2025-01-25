@@ -170,65 +170,62 @@ end
 
 
 function AngleFiltering!(G_k, X_k, cs)
-    X_krev = X_k[:,end:-1:1]
-    G_krev = G_k[:,end:-1:1]
         # Perform QR decomposition of F
-    Q, R = qr(G_krev)
+    Q, R = qr(G_k)
     
     # Compute sigma values
-    sigma = zeros(Float64, size(G_krev, 2))
+    sigma = zeros(Float64, size(G_k, 2))
     for i in 1:length(sigma)
-        sigma[i] = abs(R[i,i]) / norm(G_krev[:,i])
+        sigma[i] = abs(R[i,i]) / norm(G_k[:,i])
     end
     
     # Find indices where sigma > cs
     indicesKeep = findall(sigma .> cs)
+    kept = falses(size(X_k,2))
     
     # Update E and F by keeping only the selected columns
-    X_krev = X_krev[:, indicesKeep]
-    G_krev = G_krev[:, indicesKeep]
+    X_k = X_k[:, indicesKeep]
+    G_k = G_k[:, indicesKeep]
     
     # Update m to the new size of E
+    kept[indicesKeep] .= true
 
-    X_k .= X_krev[:,end:-1:1]
-    G_k .= G_krev[:,end:-1:1]
+    X_k .= X_k[:,end:-1:1]
+    G_k .= G_k[:,end:-1:1]
+    return .!kept
 end
 
 
 function LengthFiltering!(G_k, X_k, cs, kappabar)
-    X_krev = X_k[:,end:-1:1]
-    G_krev = G_k[:,end:-1:1]
-
     ct = sqrt(1 - cs^2)
 
     # Initialize column norms of F
-    ncol = size(G_krev, 2)
-    G_krevnormi = zeros(Float64, ncol)
+    ncol = size(G_k, 2)
+    G_knormi = zeros(Float64, ncol)
     
     for i in 1:ncol
-        G_krevnormi[i] = norm(G_krev[:, i])
+        G_knormi[i] = norm(G_k[:, i])
     end
     
     # Initialize b array
     b = zeros(Float64, ncol)
-    
     # First two b values
-    b[1] = 1 / (G_krevnormi[1]^2)
+    b[1] = 1 / (G_knormi[1]^2)
     if ncol > 1
-    b[2] = 1 / cs^2 * (ct^2 / (G_krevnormi[1]^2) + 1 / (G_krevnormi[2]^2))
+    b[2] = 1 / cs^2 * (ct^2 / (G_knormi[1]^2) + 1 / (G_knormi[2]^2))
     end
 
     if ncol > 2
     # Compute subsequent b values
     for j in 3:ncol
-        term1 = ct^2 * (ct + cs)^(2 * (j - 2)) / (G_krevnormi[1]^2 * cs^(2 * (j - 2)))
+        term1 = ct^2 * (ct + cs)^(2 * (j - 2)) / (G_knormi[1]^2 * cs^(2 * (j - 2)))
         
         term2 = 0.0
         for i in 2:(j-1)
-            term2 += ct^2 * (ct + cs)^(2 * (j - i - 1)) / (G_krevnormi[i]^2 * cs^(2 * (j - i)))
+            term2 += ct^2 * (ct + cs)^(2 * (j - i - 1)) / (G_knormi[i]^2 * cs^(2 * (j - i)))
         end
         
-        term3 = 1 / (G_krevnormi[j]^2)
+        term3 = 1 / (G_knormi[j]^2)
         
         b[j] = 1 / cs^2 * (term1 + term2 + term3)
     end
@@ -238,20 +235,19 @@ function LengthFiltering!(G_k, X_k, cs, kappabar)
     # Iterate to find the correct value of m
     dumk = 0
     for k in ncol:-1:1
-        Cf = sum(G_krevnormi[1:k].^2) * sum(b[1:k])
+        Cf = sum(G_knormi[1:k].^2) * sum(b[1:k])
         
         if Cf < kappabar^2
             dumk = k
             break
         end
     end
-    
+    filtered = trues(size(X_k,2))
     # Update m
-    X_krev = X_krev[:, 1:dumk]
-    G_krev = G_krev[:, 1:dumk]
-
-    X_k .= X_krev[:,end:-1:1]
-    G_k .= G_krev[:,end:-1:1]
+    X_k = X_k[:, 1:dumk]
+    G_k = G_k[:, 1:dumk]
+    filtered[1:dumk] .= false
+	return filtered
 end
 
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
