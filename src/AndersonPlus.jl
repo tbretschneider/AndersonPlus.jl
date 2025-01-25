@@ -3,6 +3,9 @@ module AndersonPlus
 import LinearAlgebra
 using LinearAlgebra
 
+import SparseArrays
+using SparseArrays
+
 export greet_your_package_name, AASolve
 
 export p1_f!, p2_f!, p3_f!
