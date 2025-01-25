@@ -195,60 +195,47 @@ function AngleFiltering!(G_k, X_k, cs)
     return .!kept
 end
 
-
-function LengthFiltering!(G_k, X_k, cs, kappabar)
+function LengthFiltering!(G_k,X_k,cs,kappabar)
     ct = sqrt(1 - cs^2)
-
-    # Initialize column norms of F
     ncol = size(G_k, 2)
-    G_knormi = zeros(Float64, ncol)
-    
-    for i in 1:ncol
-        G_knormi[i] = norm(G_k[:, i])
-    end
-    
-    # Initialize b array
-    b = zeros(Float64, ncol)
-    # First two b values
-    b[1] = 1 / (G_knormi[1]^2)
-    if ncol > 1
-    b[2] = 1 / cs^2 * (ct^2 / (G_knormi[1]^2) + 1 / (G_knormi[2]^2))
-    end
 
-    if ncol > 2
-    # Compute subsequent b values
+    # Compute Fnormi
+    Fnormi = [norm(G_k[:, i]) for i in 1:ncol]
+
+    # Initialize b
+    b = zeros(eltype(G_k), ncol)
+    b[1] = 1 / Fnormi[1]^2
+    b[2] = 1 / cs^2 * (ct^2 / Fnormi[1]^2 + 1 / Fnormi[2]^2)
+
     for j in 3:ncol
-        term1 = ct^2 * (ct + cs)^(2 * (j - 2)) / (G_knormi[1]^2 * cs^(2 * (j - 2)))
-        
+        term1 = ct^2 * (ct + cs)^(2 * (j - 2)) / (Fnormi[1]^2 * cs^(2 * (j - 2)))
         term2 = 0.0
-        for i in 2:(j-1)
-            term2 += ct^2 * (ct + cs)^(2 * (j - i - 1)) / (G_knormi[i]^2 * cs^(2 * (j - i)))
+        for i in 2:(j - 1)
+            term2 += ct^2 * (ct + cs)^(2 * (j - i - 1)) / (Fnormi[i]^2 * cs^(2 * (j - i)))
         end
-        
-        term3 = 1 / (G_knormi[j]^2)
-        
+        term3 = 1 / Fnormi[j]^2
         b[j] = 1 / cs^2 * (term1 + term2 + term3)
     end
 
-    end
-
-    # Iterate to find the correct value of m
-    dumk = 0
+    # Reduce dimensions based on kappabar
+    m = ncol
     for k in ncol:-1:1
-        Cf = sum(G_knormi[1:k].^2) * sum(b[1:k])
-        
+        Cf = sum(Fnormi[1:k].^2) * sum(b[1:k])
         if Cf < kappabar^2
-            dumk = k
+            m = k
             break
         end
     end
     filtered = trues(size(X_k,2))
-    # Update m
-    X_k = X_k[:, 1:dumk]
-    G_k = G_k[:, 1:dumk]
-    filtered[1:dumk] .= false
-	return filtered
+
+    # Resize X_k and G_k in place by reassigning sliced views
+    X_k .= X_k[:, 1:m]
+    G_k .= G_k[:, 1:m]
+
+    filtered[1:m] .= false
+    return filtered
 end
+
 
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
