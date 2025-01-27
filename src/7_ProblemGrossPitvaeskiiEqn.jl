@@ -717,7 +717,7 @@ end
 #32, 128, 256
 function P4(meshfile)
     
-    meshfile=pkgdir(AndersonPlus,"data","GrossPitvaeskiiEqn","meshfile");
+    meshfile=pkgdir(AndersonPlus,"data","GrossPitvaeskiiEqn",meshfile);
     nodeco, elnode, bdynde, nVert = FFEM2ErvGrd(meshfile);
 
     nodeco, elnode, bdynde, x_0, NVU, basisValues, gradBasisValues, detJglobal, 
