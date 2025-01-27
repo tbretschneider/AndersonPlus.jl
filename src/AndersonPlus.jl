@@ -15,6 +15,7 @@ include("3_AndersonFunctions.jl")
 include("4_AnalysisFunctions.jl")
 include("5_ProblemsSimple.jl")
 include("6_Problems.jl")
+include("7_ProblemGrossPitvaeskiiEqn")
 include("1_Functions.jl")
 
 end
