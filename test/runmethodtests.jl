@@ -86,4 +86,19 @@ end
 end
 
 
+@testset "GPE Equation" begin
+
+    Problem = P4("GPE32.msh")
+    
+    Algorithm = AAAlgorithm(AAMethod(:vanilla,(m=2, )),
+                            (maxit = 5, ))
+
+    Analyses = AAAnalysis([],
+                        [:residualnorm,:G_k_cond,:alpha_k_norm_l1],
+                        0,false)
+    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
+
 
