@@ -722,7 +722,6 @@ function p4_f!(G,u)
         nVert, bdrydof, StiffnessMatrix, MassMatrix)
 end
 
-export P4
 P4 = AAProblem(p4_f!,
             x_0,
             AAConvParams(1e-10, 0))
