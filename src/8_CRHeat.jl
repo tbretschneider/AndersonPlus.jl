@@ -366,6 +366,21 @@ function transport_sweep!(psi, phi, psi_left, psi_right, source, sn_data)
 end
 
 
+
+"""
+Lap1d(n)
+
+returns -d^2/dx^2 on [0,1] zero BC
+"""
+function Lap1d(n; beam=false)
+    dx = 1 / (n + 1)
+    d = 2.0 * ones(n)
+    sup = -ones(n - 1)
+    D2 = SymTridiagonal(d, sup)
+    D2 ./= (dx*dx)
+    return D2
+end
+
 function P5(Nc,omega,tau,thetal,thetar)
 
     p = 3                # Grid size exponent: nx = 10^p + 1
