@@ -6,10 +6,14 @@ using LinearAlgebra
 import SparseArrays
 using SparseArrays
 
+
+using AbstractFFTs: AbstractFFTs, plan_fft, plan_fft!
+using FFTW: FFTW
+
 export greet_your_package_name, AASolve
 
 export p1_f!, p2_f!, p3_f!, p4_f!, p5_f!
-export P4, P5
+export P4, P5, P6
 include("0_Structs.jl")
 include("2_HelperFunctions.jl")
 include("3_AndersonFunctions.jl")
