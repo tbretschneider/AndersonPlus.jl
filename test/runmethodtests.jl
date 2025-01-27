@@ -139,3 +139,19 @@ end
     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
+
+@testset "Convection Diffusion" begin
+    n = 31
+
+    Problem = P7(n)
+    
+    Algorithm = AAAlgorithm(AAMethod(:vanilla,(m=4, )),
+                            (maxit = 20, ))
+
+    Analyses = AAAnalysis([],
+                        [:residualnorm,:G_k_cond,:alpha_k_norm_l1],
+                        0,false)
+    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
