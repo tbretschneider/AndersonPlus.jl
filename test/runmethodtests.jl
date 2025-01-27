@@ -102,3 +102,25 @@ end
 
 
 
+@testset "CR_Heat Equation" begin
+    # Harder problem parameters
+    Nc = 0.05
+    omega = 0.5          # Scattering parameter
+    tau = 2.0            # Absorption/emission parameter
+    thetal = 1.0         # Left boundary temperature
+    thetar = 1.8         # Right boundary temperature
+    # Initialize the heat transfer problem
+    Problem = P5(Nc,omega,tau,thetal,thetar)
+    
+    Algorithm = AAAlgorithm(AAMethod(:vanilla,(m=10, )),
+                            (maxit = 20, ))
+
+    Analyses = AAAnalysis([],
+                        [:residualnorm,:G_k_cond,:alpha_k_norm_l1],
+                        0,false)
+    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+   
+
+
