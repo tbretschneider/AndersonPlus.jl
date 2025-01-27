@@ -124,3 +124,18 @@ end
    
 
 
+@testset "H-Equation" begin
+    n = 128
+    c = 0.99
+
+    Problem = P6(n,c)
+    
+    Algorithm = AAAlgorithm(AAMethod(:vanilla,(m=2, )),
+                            (maxit = 10, ))
+
+    Analyses = AAAnalysis([],
+                        [:residualnorm,:G_k_cond,:alpha_k_norm_l1],
+                        0,false)
+    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
