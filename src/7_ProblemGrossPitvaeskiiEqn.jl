@@ -707,23 +707,31 @@ GlobalV .= GlobalV / normPhiHat
 return GlobalV
 end
 
-meshfile=pkgdir(AndersonPlus,"data","GrossPitvaeskiiEqn","GPE128.msh");
-nodeco, elnode, bdynde, nVert = FFEM2ErvGrd(meshfile);
-
-nodeco, elnode, bdynde, x_0, NVU, basisValues, gradBasisValues, detJglobal, 
-quad_wghtsglobal, dirbdynde, bdrydof = GPESetup(nodeco, elnode, bdynde,nVert);
-
-StiffnessMatrix, MassMatrix = createMassStiffness(elnode, nodeco, 
-    basisValues, gradBasisValues, NVU, nVert);
-
-function p4_f!(G,u)
+function p4_f!(G,u, elnode, nodeco, basisValues, NVU, 
+    nVert, bdrydof, StiffnessMatrix, MassMatrix)
     u2 = copy(u)
     G .= GPE_Picard_Iteration(u2, elnode, nodeco, basisValues, NVU, 
         nVert, bdrydof, StiffnessMatrix, MassMatrix)
 end
 
-P4 = AAProblem(p4_f!,
+#32, 128, 256
+function P4(meshfile)
+    
+    meshfile=pkgdir(AndersonPlus,"data","GrossPitvaeskiiEqn","meshfile");
+    nodeco, elnode, bdynde, nVert = FFEM2ErvGrd(meshfile);
+
+    nodeco, elnode, bdynde, x_0, NVU, basisValues, gradBasisValues, detJglobal, 
+    quad_wghtsglobal, dirbdynde, bdrydof = GPESetup(nodeco, elnode, bdynde,nVert);
+
+    StiffnessMatrix, MassMatrix = createMassStiffness(elnode, nodeco, 
+        basisValues, gradBasisValues, NVU, nVert);
+
+
+
+    return AAProblem((G,u) -> p4_f!(G,u, elnode, nodeco, basisValues, NVU, 
+    nVert, bdrydof, StiffnessMatrix, MassMatrix),
             x_0,
             AAConvParams(1e-10, 0))
+end
 
     
