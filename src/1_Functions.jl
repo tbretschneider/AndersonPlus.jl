@@ -1,7 +1,16 @@
+"""
+	greet_your_package_name()
+
+"""
 function greet_your_package_name()
     return "Hello YourPackageName!"
 end
 
+"""
+	AASolve(input::AAInput)::AAOutput
+
+AASolve function.
+"""
 function AASolve(input::AAInput)::AAOutput
 
     x_0 = input.problem.x0

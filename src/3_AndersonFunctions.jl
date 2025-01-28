@@ -1,5 +1,8 @@
 using Debugger
 
+"""
+Creating next iterate function.
+"""
 function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfunc::Function, midanalysisfunc::Function)
     if aamethod.methodname == :vanilla
         # Define the function for the :vanilla method

@@ -152,7 +152,7 @@ function Pfish2d(v, fdata)
 end
 
 """
-Pvec2d(v, u, pdata)
+	Pvec2d(v, u, pdata)
 
 Returns inverse Laplacian * v
 

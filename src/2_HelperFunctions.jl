@@ -1,6 +1,6 @@
 using LinearAlgebra
 
-# Perform ridge regression
+"Perform ridge regression"
 function ridge_regression(A::AbstractMatrix, b::AbstractVector, λ::Real=1e-10)::AbstractVector
     n, m = size(A)
     I_mat = λ * I(m)
@@ -8,7 +8,7 @@ function ridge_regression(A::AbstractMatrix, b::AbstractVector, λ::Real=1e-10):
     return result
 end
 
-# Convert gamma coefficients to alpha coefficients
+"Convert gamma coefficients to alpha coefficients"
 function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
     m_k = length(gamma)
     alpha = similar(gamma, eltype(gamma), m_k + 1) # Create vector of appropriate type and size
@@ -25,11 +25,12 @@ function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
     return alpha
 end
 
+"gamma_to_alpha"
 function gamma_to_alpha(x::Float64)
     return isnan(x) ? NaN : x
 end
 
-
+"checktolerances"
 function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AAConvParams)
 
     atol = tolparams.atol
@@ -49,6 +50,7 @@ function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AACo
     return false
 end
 
+"geometriccond"
 function geometriccond(A::AbstractMatrix)
     
     # Calculate the norm of each column
@@ -61,10 +63,12 @@ function geometriccond(A::AbstractMatrix)
     return cond(A_normalized)
 end
 
+"hi"
 function geometriccond(x::Float64)
     return isnan(x) ? NaN : x
 end
 
+"nl_reflector"
 @inline function nl_reflector!(x::AbstractVector{T}) where {T}
     n = length(x)
     n == 0 && return zero(eltype(x))
