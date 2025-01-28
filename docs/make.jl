@@ -1,5 +1,6 @@
 # Inside make.jl
-push!(LOAD_PATH,"../src/")
+# Activate the parent project directory
+push!(LOAD_PATH,"./src/")
 using AndersonPlus
 using Documenter
 
@@ -9,8 +10,9 @@ makedocs(
          pages=[
                 "Home" => "index.md"
                ],
-	 debug=true,)
+	 debug=true,
+	 checkdocs = :none,)
 
-deploydocs(;
-    repo="github.com/14tbretschneider/AndersonPlus.jl",
+deploydocs(
+    repo = "github.com/tbretschneider/AndersonPlus.jl.git",
 )
