@@ -85,7 +85,6 @@ postanalysis = output.postanalysis
 - `output_postanalysis`
 
 """
-
 function AASolve(input::AAInput)::AAOutput
 
     x_0 = input.problem.x0
