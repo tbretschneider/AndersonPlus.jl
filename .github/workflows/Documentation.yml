@@ -1,50 +1,30 @@
-name: Build Documentation
+name: Documentation
 
 on:
   push:
     branches:
-      - main
-    tags: ['*']
+      - main # update to match your development branch (master, main, dev, trunk, ...)
+    tags: '*'
   pull_request:
-  workflow_dispatch:
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 jobs:
-  build-docs:
-    name: Build Documentation
+  build:
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: read
+      statuses: write
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-
     steps:
       - uses: actions/checkout@v4
-
-      - name: Set up Julia
-        uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@v2
         with:
-          version: '1.11'
-          arch: 'x64'
-
-      - name: Cache Julia packages
-        uses: julia-actions/cache@v2
-        with:
-          path: ~/.julia
-          key: ${{ runner.os }}-julia-1.11-x64-${{ hashFiles('**/Project.toml') }}
-          restore-keys: |
-            ${{ runner.os }}-julia-1.11-x64-
-
+          version: '1'
+      - uses: julia-actions/cache@v2
       - name: Install dependencies
-        run: |
-          julia --project=. -e 'using Pkg; Pkg.instantiate()'
-
-      - name: Build Documentation
-        run: |
-          julia --project=. -e 'using Documenter; include("docs/make.jl")'
-
-      - name: Upload Documentation (Optional)
-        uses: actions/upload-artifact@v2
-        with:
-          name: docs
-          path: docs/build/html
+        run: julia --project=. -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+      - name: Build and deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # If authenticating with GitHub Actions token
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }} # If authenticating with SSH deploy key
+        run: julia --project=. docs/make.jl
