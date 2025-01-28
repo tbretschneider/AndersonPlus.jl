@@ -1,6 +1,20 @@
 using LinearAlgebra
 
-"Perform ridge regression"
+"""
+Perform ridge regression.
+
+This function performs ridge regression, a regularization technique 
+that adds a penalty term to the least squares solution to prevent 
+overfitting. The penalty term is controlled by the parameter `λ`.
+
+# Arguments
+- `A::AbstractMatrix`: The design matrix.
+- `b::AbstractVector`: The response vector.
+- `λ::Real=1e-10`: The regularization parameter. Defaults to a small value.
+
+# Returns
+- `AbstractVector`: The ridge regression solution vector.
+"""
 function ridge_regression(A::AbstractMatrix, b::AbstractVector, λ::Real=1e-10)::AbstractVector
     n, m = size(A)
     I_mat = λ * I(m)
@@ -8,7 +22,18 @@ function ridge_regression(A::AbstractMatrix, b::AbstractVector, λ::Real=1e-10):
     return result
 end
 
-"Convert gamma coefficients to alpha coefficients"
+"""
+Convert gamma coefficients to alpha coefficients.
+
+This function transforms a vector of gamma coefficients into 
+alpha coefficients based on the specified transformation rules.
+
+# Arguments
+- `gamma::AbstractVector`: The input vector of gamma coefficients.
+
+# Returns
+- `AbstractVector`: The resulting vector of alpha coefficients.
+"""
 function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
     m_k = length(gamma)
     alpha = similar(gamma, eltype(gamma), m_k + 1) # Create vector of appropriate type and size
@@ -25,12 +50,38 @@ function gamma_to_alpha(gamma::AbstractVector)::AbstractVector
     return alpha
 end
 
-"gamma_to_alpha"
+
+"""
+Convert gamma coefficients to alpha coefficients.
+
+This function transforms a vector of gamma coefficients into 
+alpha coefficients based on the specified transformation rules.
+
+# Arguments
+- `gamma::AbstractVector`: The input vector of gamma coefficients.
+
+# Returns
+- `AbstractVector`: The resulting vector of alpha coefficients.
+"""
 function gamma_to_alpha(x::Float64)
     return isnan(x) ? NaN : x
 end
 
-"checktolerances"
+
+"""
+Check tolerances between two vectors.
+
+This function checks if two vectors `x` and `y` satisfy specified absolute 
+or relative tolerances.
+
+# Arguments
+- `x::Vector{Float64}`: The first vector.
+- `y::Vector{Float64}`: The second vector.
+- `tolparams::AAConvParams`: A structure containing the tolerances `atol` (absolute) and `rtol` (relative).
+
+# Returns
+- `Bool`: `true` if the tolerances are satisfied, otherwise `false`.
+"""
 function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AAConvParams)
 
     atol = tolparams.atol
@@ -50,7 +101,18 @@ function checktolerances(x::Vector{Float64}, y::Vector{Float64}, tolparams::AACo
     return false
 end
 
-"geometriccond"
+"""
+Calculate the geometric condition number of a matrix.
+
+This function normalizes the columns of a matrix and computes its 
+condition number.
+
+# Arguments
+- `A::AbstractMatrix`: The input matrix.
+
+# Returns
+- `Real`: The geometric condition number of the matrix.
+"""
 function geometriccond(A::AbstractMatrix)
     
     # Calculate the norm of each column
@@ -63,12 +125,35 @@ function geometriccond(A::AbstractMatrix)
     return cond(A_normalized)
 end
 
-"hi"
+"""
+Calculate the geometric condition number of a matrix.
+
+This function normalizes the columns of a matrix and computes its 
+condition number.
+
+# Arguments
+- `A::AbstractMatrix`: The input matrix.
+
+# Returns
+- `Real`: The geometric condition number of the matrix.
+"""
 function geometriccond(x::Float64)
     return isnan(x) ? NaN : x
 end
 
-"nl_reflector"
+
+"""
+Apply a non-linear reflector to a vector in-place.
+
+This function applies a non-linear reflector operation to the given vector `x`. 
+The function also modifies the vector in-place.
+
+# Arguments
+- `x::AbstractVector{T}`: The input vector.
+
+# Returns
+- `T`: The reflector scaling factor.
+"""
 @inline function nl_reflector!(x::AbstractVector{T}) where {T}
     n = length(x)
     n == 0 && return zero(eltype(x))
@@ -102,10 +187,38 @@ end
     safe_min^count * ξ1/ν
 end
 
+"""
+Perform pivoted QR decomposition with tolerance-based filtering.
+
+This function applies a pivoted QR decomposition to the input matrix `A`, 
+with an optional tolerance-based filtering mechanism.
+
+# Arguments
+- `A::AbstractMatrix{T}`: The input matrix.
+- `tol`: The tolerance for pivoting. Defaults to machine epsilon.
+
+# Returns
+- `Tuple`: A tuple containing the pivoted QR decomposition and a boolean array indicating deleted columns.
+"""
 function paqr_piv(A::AbstractMatrix{T}, args...; kwargs...) where {T}
     AA = copy(A)
     paqr_piv!(AA, args...; kwargs...)
 end
+
+
+"""
+Perform pivoted QR decomposition with tolerance-based filtering.
+
+This function applies a pivoted QR decomposition to the input matrix `A`, 
+with an optional tolerance-based filtering mechanism.
+
+# Arguments
+- `A::AbstractMatrix{T}`: The input matrix.
+- `tol`: The tolerance for pivoting. Defaults to machine epsilon.
+
+# Returns
+- `Tuple`: A tuple containing the pivoted QR decomposition and a boolean array indicating deleted columns.
+"""
 function paqr_piv!(A::AbstractMatrix{T}; tol=eps(T)) where {T}
     m, n = size(A)
     τ = zeros(T, min(m,n))
@@ -172,7 +285,19 @@ end
 
 ##################### Pollock Functions #################################
 
+"""
+Filter based on angular thresholds.
 
+Filters columns of the input historical structure `HS` based on angular 
+thresholding, determined by the parameter `cs`.
+
+# Arguments
+- `HS`: Historical structure containing matrices `X_k` and `G_k`.
+- `cs`: Angular threshold for filtering.
+
+# Returns
+- `AbstractVector{Bool}`: A boolean array indicating filtered elements.
+"""
 function AngleFiltering!(HS, cs)
     X_k = HS.X_k
     G_k = HS.G_k
@@ -199,6 +324,19 @@ function AngleFiltering!(HS, cs)
     return .!kept
 end
 
+"""
+    LengthFiltering!(HS, cs, kappabar)
+
+Performs length filtering on matrices `X_k` and `G_k` within the `HS` object by reducing dimensions based on a specified threshold `kappabar`.
+
+### Parameters:
+- `HS::Object`: A structure containing `X_k` (data matrix) and `G_k` (gradient matrix).
+- `cs::Float64`: A scaling parameter used for transformation and dimensional reduction.
+- `kappabar::Float64`: A threshold controlling the maximum allowed cumulative variance.
+
+### Returns:
+- `filtered::Vector{Bool}`: A boolean vector indicating which columns were filtered out.
+"""
 function LengthFiltering!(HS,cs,kappabar)
     X_k = HS.X_k
     G_k = HS.G_k
@@ -243,6 +381,18 @@ function LengthFiltering!(HS,cs,kappabar)
 end
 
 
+"""
+    createAAMethod(method::Symbol; methodparams=nothing)
+
+Creates an `AAMethod` object with specified or default parameters for various Anderson Acceleration (AA) methods.
+
+### Parameters:
+- `method::Symbol`: A symbol representing the AA method (e.g., `:vanilla`, `:paqr`, `:faa`).
+- `methodparams::NamedTuple`: (Optional) A named tuple of parameters for the method. If not provided, default parameters are used.
+
+### Returns:
+- `AAMethod`: An object encapsulating the method and its parameters.
+"""
 function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     # Define default parameters for each method
     defaults = Dict(
@@ -301,6 +451,18 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
     return AAMethod(method, params)
 end
 
+"""
+    initialise_historicalstuff(methodname::Symbol, x_k::Vector)
+
+Initializes a historical storage object for a specific AA method, based on the provided method name and input vector `x_k`.
+
+### Parameters:
+- `methodname::Symbol`: The name of the AA method (`:vanilla`, `:paqr`, `:faa`).
+- `x_k::Vector{T}`: The initial vector `x_k` used for initializing historical data.
+
+### Returns:
+- `HistoricalStuff`: A structure for storing historical data specific to the AA method.
+"""
 function initialise_historicalstuff(methodname::Symbol,x_k::Vector)
     if methodname == :vanilla
         return VanillaHistoricalStuff([],[],0) # Carries Solhist and Residual and iterations...
@@ -313,6 +475,20 @@ function initialise_historicalstuff(methodname::Symbol,x_k::Vector)
     end
 end
 
+
+"""
+    AAAnalysisOutput(input::AAInput, fullmidanalysis::Vector{Any}, iterations::Int)
+
+Transforms a vector of mid-analysis results into a structured `NamedTuple` for output, including method and algorithm parameters.
+
+### Parameters:
+- `input::AAInput`: Input object containing the algorithm and problem information.
+- `fullmidanalysis::Vector{Any}`: Vector of NamedTuples representing the analysis data.
+- `iterations::Int`: The number of iterations performed during the analysis.
+
+### Returns:
+- `AAAnalysisOutput`: A structured output with detailed results.
+"""
 function AAAnalysisOutput(input::AAInput,fullmidanalysis::Vector{Any},iterations::Int)
     fields = keys(fullmidanalysis[1])
     

@@ -1,3 +1,23 @@
+
+"""
+    create_midanalysis_function(midanalysis::Vector{Symbol})
+
+Generates a function for intermediate analysis during the iterative process. The function processes the input `NamedTuple` based on the provided `midanalysis` symbols and returns a `NamedTuple` with the computed results.
+
+# Arguments
+- `midanalysis`: A vector of symbols representing the fields to be included in the intermediate analysis. Each symbol corresponds to a specific field, such as `:G_k_cond` or `:gamma_k_norm`.
+
+# Returns
+A function that takes a `NamedTuple` as input and returns a `NamedTuple` with the calculated intermediate analysis results.
+
+The function dynamically adds fields to the result based on the specified symbols. For each field, a specific calculation is performed, such as computing the norm of `gamma_k` or evaluating the condition number of a matrix.
+
+# Example:
+```julia
+midanalysis_func = create_midanalysis_function([:G_k_cond, :gamma_k_norm])
+result = midanalysis_func(input_data)
+```
+"""
 function create_midanalysis_function(midanalysis::Vector{Symbol})
     return function(input::NamedTuple)
     
@@ -51,6 +71,26 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
         return result
     end
 end
+
+"""
+    create_liveanalysis_function(liveanalysis::Vector{Symbol})
+
+Generates a function for live analysis during the iterative process. The function processes the input `NamedTuple` based on the provided `liveanalysis` symbols and returns a `NamedTuple` with the computed live analysis results.
+
+# Arguments
+- `liveanalysis`: A vector of symbols representing the fields to be included in the live analysis. Each symbol corresponds to a specific field, such as `:residualnorm` or `:alpha_k_norm`.
+
+# Returns
+A function that takes a `NamedTuple` as input and returns a `NamedTuple` with the calculated live analysis results.
+
+The function dynamically adds fields to the result based on the specified symbols. For each field, a specific calculation is performed, such as computing the norm of the difference between `x_k` and `x_kp1` or evaluating the condition number of a matrix.
+
+# Example:
+```julia
+liveanalysis_func = create_liveanalysis_function([:residualnorm, :alpha_k_norm])
+result = liveanalysis_func(input_data)
+```
+"""
 
 function create_liveanalysis_function(liveanalysis::Vector{Symbol})
     return function(input::NamedTuple)
@@ -111,7 +151,22 @@ const AD = Dict(
     :G_geocond => "G Geometric Condition"
 )
 
+"""
+    output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
 
+Outputs a formatted post-analysis summary, including method parameters, algorithm parameters, convergence information, and additional fields. The output is printed with line wrapping for better readability.
+
+# Arguments
+- `postanalysis`: A `NamedTuple` containing the post-analysis data to be output.
+- `summary`: A boolean flag to indicate whether to print a summary (including method, parameters, and iterations).
+- `line_width`: The maximum width of lines for wrapping the printed summary (default is 80).
+
+# Example:
+```julia
+output_postanalysis(postanalysis_data, summary=true)
+```
+
+"""
 function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefreq::Int, startwalltime::Float64)
     if updatefreq != 0
         if (iterations % updatefreq == 0) && (iterations > 1)
@@ -150,7 +205,22 @@ const SD = Dict(
     :faa => "Filtered (Pollock)"
 )
 
-# Function to output the summary with line wrapping
+"""
+    output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
+
+Outputs a formatted post-analysis summary, including method parameters, algorithm parameters, convergence information, and additional fields. The output is printed with line wrapping for better readability.
+
+# Arguments
+- `postanalysis`: A `NamedTuple` containing the post-analysis data to be output.
+- `summary`: A boolean flag to indicate whether to print a summary (including method, parameters, and iterations).
+- `line_width`: The maximum width of lines for wrapping the printed summary (default is 80).
+
+# Example:
+```julia
+output_postanalysis(postanalysis_data, summary=true)
+```
+
+"""
 function output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
     if summary
         # Print a line of asterisks

@@ -1,7 +1,40 @@
 using Debugger
 
 """
-Creating next iterate function.
+    create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfunc::Function, midanalysisfunc::Function)
+
+Generates an iteration function based on the provided `aamethod` (which can be one of `:vanilla`, `:paqr`, or `:faa`).
+The function performs iterative updates for the given `HS` historical data structure and updates the solution vectors `x_k` and `x_kp1`.
+
+# Arguments
+- `GFix!`: A function to apply some transformation or fix to the solution vectors `x_k` and `x_kp1`.
+- `aamethod`: An `AAMethod` object containing the method type and its parameters.
+- `liveanalysisfunc`: A function that takes live analysis data (such as the current iteration, residuals, and solution vectors) and returns updated live analysis results.
+- `midanalysisfunc`: A function that processes intermediate analysis data during the iteration.
+
+# Returns
+Returns a function that, given the current historical data (`HS`), and the new solution vector `x_kp1` along with the previous solution vector `x_k`, computes the next iterate, performs necessary updates, and returns the mid-analysis and live-analysis results.
+
+The returned function updates `HS` with new residuals, solution histories, and computes intermediate data depending on the specified method in `aamethod`.
+
+### Method Specifics:
+1. **For `:vanilla` method**:
+   - Updates `x_kp1` based on previous residuals and solution history.
+   - Uses ridge regression if necessary for solving the system.
+   
+2. **For `:paqr` method**:
+   - Updates `x_kp1` using the PAQR method and solves using QR decomposition.
+   - Performs residual updates and stores relevant data.
+
+3. **For `:faa` method**:
+   - Uses filtered historical data (through `LengthFiltering!` and `AngleFiltering!`).
+   - Solves using `gamma_k` based on the historical `G_k` and `X_k` data.
+
+# Example:
+```julia
+next_iterate_func = create_next_iterate_function(GFix!, aamethod, liveanalysisfunc, midanalysisfunc)
+midanalysis, liveanalysis = next_iterate_func(HS, x_kp1, x_k)
+```
 """
 function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfunc::Function, midanalysisfunc::Function)
     if aamethod.methodname == :vanilla
