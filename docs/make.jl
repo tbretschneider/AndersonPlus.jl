@@ -11,7 +11,3 @@ makedocs(
                ],
 	 debug=true,
 	 checkdocs = :none,)
-
-deploydocs(;
-    repo="github.com/14tbretschneider/AndersonPlus.jl",
-)
