@@ -1,7 +1,5 @@
 # Inside make.jl
 # Activate the parent project directory
-Pkg.activate(".")  # Activate the project in the current directory (which is the parent directory)
-
 push!(LOAD_PATH,"./src/")
 using AndersonPlus
 using Documenter
