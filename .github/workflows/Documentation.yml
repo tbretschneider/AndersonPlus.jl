@@ -1,0 +1,36 @@
+name: Build Documentation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          julia-version: '1.x'  # Replace with your desired version
+
+      - name: Install dependencies
+        run: |
+          julia --project=. -e 'using Pkg; Pkg.instantiate()'
+
+      - name: Build Documentation
+        run: |
+          julia --project=. -e 'using Documenter; include("docs/make.jl")'
+
+      - name: Upload Documentation (Optional)
+        uses: actions/upload-artifact@v2
+        with:
+          name: docs
+          path: docs/build/html
