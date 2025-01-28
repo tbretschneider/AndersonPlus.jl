@@ -9,7 +9,8 @@ makedocs(
          pages=[
                 "Home" => "index.md"
                ],
-	 debug=true,)
+	 debug=true,
+	 checkdocs = :none,)
 
 deploydocs(;
     repo="github.com/14tbretschneider/AndersonPlus.jl",
