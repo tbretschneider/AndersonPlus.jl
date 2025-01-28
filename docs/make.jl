@@ -1,4 +1,9 @@
 # Inside make.jl
+# Activate the parent project directory
+cd("..")  # Move up one directory
+using Pkg
+Pkg.activate(".")  # Activate the project in the current directory (which is the parent directory)
+
 push!(LOAD_PATH,"../src/")
 using AndersonPlus
 using Documenter
@@ -11,3 +16,7 @@ makedocs(
                ],
 	 debug=true,
 	 checkdocs = :none,)
+
+deploydocs(
+    repo = "github.com/tbretschneider/AndersonPlus.jl.git",
+)
