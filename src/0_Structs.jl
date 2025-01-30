@@ -54,6 +54,14 @@ end
 
 
 
+
+###############################
+# Method Specific Stuff #######
+###############################
+
+
+
+
 abstract type HistoricalStuff end
 
 mutable struct VanillaHistoricalStuff <: HistoricalStuff
@@ -83,13 +91,24 @@ mutable struct FAAHistoricalStuff <: HistoricalStuff
 end
 
 mutable struct FFTAAHistoricalStuff <: HistoricalStuff
-    FFTG_k::Matrix{Float64}  # Matrix of Float64
-    FFTX_k::Matrix{Float64}  # Matrix of Float64
+    FFTG_k::Matrix{ComplexF64}  # Matrix of Float64
+    FFTX_k::Matrix{ComplexF64}  # Matrix of Float64
     g_km1::Vector{Float64}  # Vector of Float64
     iterations::Int  # Integer
 
     # Constructor with default empty values
     function FFTAAHistoricalStuff(numrows::Int,tf::Float64)
-        new(Matrix{Float64}(undef,Int(ceil(tf*numrows)),0), Matrix{Float64}(undef,Int(ceil(numrows*tf)),0), Vector{Float64}(undef,numrows), 0)
+        new(Matrix{ComplexF64}(undef,Int(ceil(tf*numrows)),0), Matrix{ComplexF64}(undef,Int(ceil(numrows*tf)),0), Vector{Float64}(undef,numrows), 0)
+    end
+end
+
+mutable struct DWTAAHistoricalStuff <: HistoricalStuff
+    DWTG_k::Matrix{Float64}  # Matrix of Float64
+    DWTF_k::Matrix{Float64}  # Matrix of Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function DWTAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 0)
     end
 end

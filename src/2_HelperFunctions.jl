@@ -380,6 +380,9 @@ function LengthFiltering!(HS,cs,kappabar)
     return filtered
 end
 
+##########################################
+########## Method Specific Stuff #########
+##########################################
 
 """
     createAAMethod(method::Symbol; methodparams=nothing)
@@ -400,6 +403,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :paqr => (threshold = 1e-5),
         :faa => (cs = 0.1, kappabar = 1, m = 20),
         :fftaa => (m = 10, tf  = 0.9),
+        :dwtaa => (m=10),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -423,6 +427,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :paqr => [:threshold],
         :faa => [:cs, :kappabar, :m],
         :fftaa => [:m, :tf],
+        :dwtaa => [:m],
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -475,10 +480,16 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
         return FAAHistoricalStuff(length(x_0))
     elseif methodname == :fftaa
         return FFTAAHistoricalStuff(length(x_0),method.methodparams.tf)
+    elseif methodname == :dwtaa
+        return DWTAAHistoricalStuff(length(x_0))
     else
         error("Unsupported AAMethod: $methodname")
     end
 end
+
+
+
+
 
 
 """

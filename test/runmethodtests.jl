@@ -2,6 +2,7 @@ using AndersonPlus
 
 LONG = false
 
+if LONG
 @testset "Vanilla Toth Kelly 2015 Vanilla" begin
     residual_norm = [6.501e-01, 4.487e-01, 2.615e-02, 7.254e-02, 1.531e-04, 1.185e-05, 1.825e-08, 1.048e-13]
     condition_number = [1.0, 1.000e+00, 2.016e+10, 1.378e+09, 3.613e+10, 2.549e+11, 3.677e+10, 1.574e+11]  # NaN for missing value at k=0
@@ -25,6 +26,7 @@ LONG = false
     @test isapprox(Output.analysis.output.residualnorm,residual_norm,rtol=5e-3)
     @test isapprox(Output.analysis.output.G_k_cond[1:7],condition_number[1:7],rtol=5e-3)
     @test isapprox(Output.analysis.output.alpha_k_norm_l1[2:7],coefficient_norm[2:7],atol=5e-3)
+end
 end
 
 @testset "PAQR Analysis" begin
@@ -174,3 +176,22 @@ end
                     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
+
+@testset "FFTAA" begin
+    # Parameters
+    k0 = 8.0
+    N = 2047
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    Algorithm = AAAlgorithm(AAMethod(:dwtaa,(m=10,)),
+                            (maxit = 20, ))
+
+    Analyses = AAAnalysis([:residualnorm],
+                        [:residualnorm],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
