@@ -226,7 +226,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 reconstructed[end-truncation+2:end] .= conj.(reverse(compressed[2:end]))  # Restore symmetry
 
                 # Compute inverse FFT
-                update = real(ifft(reconstructed))
+                update = real(FFTW.ifft(reconstructed))
 
                 x_kp1 .= x_kp1 - update
 
@@ -243,7 +243,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 reconstructed[1:truncation] .= compressed
                 reconstructed[end-truncation+2:end] .= conj.(reverse(compressed[2:end]))  # Restore symmetry
 
-                update = real(ifft(reconstructed))
+                update = real(FFTW.ifft(reconstructed))
 
                 x_kp1 = x_kp1 - update
 
