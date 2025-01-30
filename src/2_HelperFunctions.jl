@@ -380,6 +380,45 @@ function LengthFiltering!(HS,cs,kappabar)
     return filtered
 end
 
+
+function wavelet_compress(x::Vector{Float64}, wt, ratio::Float64)
+    coeffs = dwt(x, wt, 4)  # Compute wavelet transform
+    num_to_zero = Int(floor(length(coeffs)*(1 - 1 / ratio)))
+    
+            # Get indices of smallest coefficients
+            sorted_indices = sortperm(abs.(coeffs))
+            zero_indices = sorted_indices[1:num_to_zero]
+            coeffs[zero_indices] .= 0.0  # Zero out the smallest coefficients
+    
+    return coeffs  # Return modified wavelet coefficients
+end
+
+function wavelet_decompress(coeffs, wt)
+    return idwt(coeffs, wt, 4)  # Inverse transform
+end
+
+
+"""
+    Computes an adaptive compression ratio based on the ratio of residuals and iteration number.
+
+    Arguments:
+    - residual_ratio: (r_new / r_old) ratio of new residual to old residual.
+    - iteration: Current iteration number.
+
+    Returns:
+    - compression_ratio: Percentage of coefficients to zero out (between 5% and 30%).
+"""
+function compute_compression_ratio(residual_ratio::Float64, iteration::Int)
+    base_compression = 20  # Initial compression level
+    sensitivity = 0.1
+
+    # Adjust compression: if residual improves fast, reduce compression
+    compression_ratio = base_compression - sensitivity * residual_ratio
+
+    # Clamp between 5% and 30%
+    return clamp(compression_ratio, 1.0, 50.0)
+end
+
 ##########################################
 ########## Method Specific Stuff #########
 ##########################################

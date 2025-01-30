@@ -273,12 +273,14 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
+	    residualratio = norm(g_k)/HS.residual
+		HS.residual = norm(g_k)
             m = aamethod.methodparams.m
 
-            waveletx_kp1 = dwt(x_kp1,wavelet(WT.db2),5)
+            waveletx_kp1 = wavelet_compress(x_kp1,wavelet(WT.db2),1.0)
             HS.DWTF_k = hcat(waveletx_kp1,HS.DWTF_k)
 
-            waveletg_k = dwt(g_k,wavelet(WT.db2),5)
+	    waveletg_k = wavelet_compress(g_k,wavelet(WT.db2),compute_compression_ratio(residualratio,HS.iterations))
             HS.DWTG_k = hcat(waveletg_k,HS.DWTG_k)
 
             if HS.iterations > 0
@@ -297,7 +299,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
                 waveletx_kp1 .= HS.DWTF_k * alpha_k
                 
-                x_kp1 .= idwt(waveletx_kp1,wavelet(WT.db2),5)
+                x_kp1 .= wavelet_decompress(waveletx_kp1,wavelet(WT.db2))
 
             elseif HS.iterations == 0
 

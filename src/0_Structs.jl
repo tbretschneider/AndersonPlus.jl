@@ -105,10 +105,11 @@ end
 mutable struct DWTAAHistoricalStuff <: HistoricalStuff
     DWTG_k::Matrix{Float64}  # Matrix of Float64
     DWTF_k::Matrix{Float64}  # Matrix of Float64
+    residual::Float64
     iterations::Int  # Integer
 
     # Constructor with default empty values
     function DWTAAHistoricalStuff(numrows::Int)
-        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 0)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 1.0,0)
     end
 end
