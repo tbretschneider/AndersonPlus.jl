@@ -110,6 +110,6 @@ mutable struct DWTAAHistoricalStuff <: HistoricalStuff
 
     # Constructor with default empty values
     function DWTAAHistoricalStuff(numrows::Int)
-        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 1.0,0)
+        new(Matrix{Float64}(undef,2 ^ ceil(Int, log2(numrows)),0), Matrix{Float64}(undef,2 ^ ceil(Int, log2(numrows)),0), 1.0,0)
     end
 end
