@@ -380,23 +380,35 @@ function LengthFiltering!(HS,cs,kappabar)
     return filtered
 end
 
+function pad_to_next_power_of_2(x::Vector{Float64})
+    n = length(x)
+    next_pow2 = 2 ^ ceil(Int, log2(n))
+    padded_x = vcat(x, zeros(next_pow2 - n))  # Pad with zeros
+    return padded_x, n  # Return padded signal and original length
+end
 
+# Wavelet compression function with padding
 function wavelet_compress(x::Vector{Float64}, wt, ratio::Float64)
-    coeffs = dwt(x, wt, 4)  # Compute wavelet transform
-    num_to_zero = Int(floor(length(coeffs)*(1 - 1 / ratio)))
+    padded_x, original_length = pad_to_next_power_of_2(x)  # Pad signal
+    coeffs = dwt(padded_x, wt, 4)  # Compute wavelet transform on padded signal
     
-            # Get indices of smallest coefficients
-            sorted_indices = sortperm(abs.(coeffs))
-            zero_indices = sorted_indices[1:num_to_zero]
-            coeffs[zero_indices] .= 0.0  # Zero out the smallest coefficients
+    num_to_zero = Int(floor(length(coeffs) * (1 - 1 / ratio)))
     
-    return coeffs  # Return modified wavelet coefficients
+    # Get indices of smallest coefficients
+    sorted_indices = sortperm(abs.(coeffs))
+    zero_indices = sorted_indices[1:num_to_zero]
+    coeffs[zero_indices] .= 0.0  # Zero out the smallest coefficients
+    
+    return coeffs, original_length  # Return modified coefficients and original length
 end
 
-function wavelet_decompress(coeffs, wt)
-    return idwt(coeffs, wt, 4)  # Inverse transform
+function wavelet_decompress(coeffs, wt, original_length::Int)
+    # Inverse wavelet transform
+    decompressed = idwt(coeffs, wt, 4) 
+    
+    # Trim the decompressed signal back to the original length
+    return decompressed[1:original_length]
 end
-
 
 """
     Computes an adaptive compression ratio based on the ratio of residuals and iteration number.
