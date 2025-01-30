@@ -252,7 +252,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             end
             
             newFFTX_kcol = FFTW.fft(x_kp1 - x_k)[1:truncation]
-            HS.FFTX_k = hcat(newFFTX_kcol,HS.X_k)
+            HS.FFTX_k = hcat(newFFTX_kcol,HS.FFTX_k)
             HS.g_km1 = g_k
             HS.iterations += 1
 
