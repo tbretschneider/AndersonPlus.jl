@@ -108,7 +108,7 @@ mutable struct DWTAAHistoricalStuff <: HistoricalStuff
     iterations::Int  # Integer
 
     # Constructor with default empty values
-    function FFTAAHistoricalStuff(numrows::Int)
+    function DWTAAHistoricalStuff(numrows::Int)
         new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 0)
     end
 end

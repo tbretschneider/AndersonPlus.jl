@@ -275,7 +275,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             g_k = x_kp1 .- x_k
             m = aamethod.methodparams.m
 
-            waveletx_kp1 = dwt(x_kp1,wavelet(WT,db2),5)
+            waveletx_kp1 = dwt(x_kp1,wavelet(WT.db2),5)
             HS.DWTF_k = hcat(waveletx_kp1,HS.DWTF_k)
 
             waveletg_k = dwt(g_k,wavelet(WT.db2),5)
@@ -289,7 +289,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
                 end
                 
                 GT_G = HS.DWTG_k' * HS.DWTG_k
-                ones_vec = ones(length(x_k))
+		ones_vec = ones(size(GT_G,1))
                 α = GT_G \ ones_vec  # Solves the system without computing the inverse
         
                 # Step 2: Normalize α
@@ -305,7 +305,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             
             HS.iterations += 1
 
-            midanalysisin = (residual = g_k)
+            midanalysisin = (residual = g_k, )
 
             liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
 
