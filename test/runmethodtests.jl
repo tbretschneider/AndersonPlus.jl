@@ -180,7 +180,7 @@ end
 @testset "FFTAA" begin
     # Parameters
     k0 = 8.0
-    N = 2000
+    N = 2047
     ε = 0.2
 
     Problem = P3(k0, ε, N)
