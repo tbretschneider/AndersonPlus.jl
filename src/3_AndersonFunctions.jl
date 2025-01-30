@@ -1,4 +1,5 @@
 using Debugger
+using Wavelets
 
 """
     create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfunc::Function, midanalysisfunc::Function)
@@ -267,7 +268,54 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             return midanalysis, liveanalysis
 
         end
+    elseif aamethod.methodname == :dwtaa
+        return function(HS::DWTAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
 
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            m = aamethod.methodparams.m
+
+            waveletx_kp1 = dwt(x_kp1,wavelet(WT,db2),5)
+            HS.DWTF_k = hcat(waveletx_kp1,HS.DWTF_k)
+
+            waveletg_k = dwt(g_k,wavelet(WT.db2),5)
+            HS.DWTG_k = hcat(waveletg_k,HS.DWTG_k)
+
+            if HS.iterations > 0
+
+                if size(HS.DWTG_k,2) > m
+                    HS.DWTG_k = HS.DWTG_k[:,1:m]
+                    HS.DWTF_k = HS.DWTF_k[:,1:m]
+                end
+                
+                GT_G = HS.DWTG_k' * HS.DWTG_k
+                ones_vec = ones(length(x_k))
+                α = GT_G \ ones_vec  # Solves the system without computing the inverse
+        
+                # Step 2: Normalize α
+                alpha_k = α / sum(α)
+
+                waveletx_kp1 .= HS.DWTF_k * alpha_k
+                
+                x_kp1 .= idwt(waveletx_kp1,wavelet(WT.db2),5)
+
+            elseif HS.iterations == 0
+
+            end
+            
+            HS.iterations += 1
+
+            midanalysisin = (residual = g_k)
+
+            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
     else
         error("Unsupported methodname: $(aamethod.methodname)")
     end

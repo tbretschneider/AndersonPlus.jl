@@ -176,3 +176,22 @@ end
                     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
+
+@testset "FFTAA" begin
+    # Parameters
+    k0 = 8.0
+    N = 2000
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    Algorithm = AAAlgorithm(AAMethod(:dwtaa,(m=10,)),
+                            (maxit = 20, ))
+
+    Analyses = AAAnalysis([:residualnorm],
+                        [:residualnorm],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
