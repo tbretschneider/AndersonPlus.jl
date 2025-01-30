@@ -113,7 +113,7 @@ function AASolve(input::AAInput)::AAOutput
     x_k = copy(x_0)
     x_kp1 = copy(x_0)
 
-    HS = initialise_historicalstuff(method.methodname,x_k)
+    HS = initialise_historicalstuff(method,x_0)
 
     fullmidanalysis = []
 

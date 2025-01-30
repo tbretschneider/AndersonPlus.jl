@@ -202,7 +202,8 @@ const SD = Dict(
     :iterations => "Iterations",
     :vanilla => "Vanilla",
     :paqr => "Pivoting Avoiding QR",
-    :faa => "Filtered (Pollock)"
+    :faa => "Filtered (Pollock)",
+    :fftaa => "Truncated Fourier Transformed History",
 )
 
 """

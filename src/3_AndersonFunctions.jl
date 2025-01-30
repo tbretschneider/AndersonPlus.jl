@@ -197,7 +197,76 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             return midanalysis, liveanalysis
 
         end
-    
+    elseif aamethod.methodname == :fftaa
+        return function(HS::FFTAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            m = aamethod.methodparams.m
+            tf = aamethod.methodparams.tf
+
+            truncation = Int(ceil(length(x_k)*tf))
+            fftg_k = FFTW.fft(g_k)[1:truncation]
+
+            if HS.iterations > 1
+                newFFTG_kcol = FFTW.fft(g_k - HS.g_km1)[1:truncation]
+                HS.FFTG_k = hcat(newFFTG_kcol,HS.FFTG_k)
+                if size(HS.FFTG_k,2) > m - 1
+                    HS.FFTG_k = HS.FFTG_k[:,1:m-1]
+                    HS.FFTX_k = HS.FFTX_k[:,1:m-1]
+                end
+
+                gamma_k = HS.FFTG_k \ fftg_k
+                
+                compressed = (HS.FFTX_k + HS.FFTG_k) * gamma_k
+
+                # Reconstruct full spectrum before inverse FFT
+                reconstructed = zeros(ComplexF64, length(x_k))  # Allocate memory only before inverse FFT
+                reconstructed[1:truncation] .= compressed
+                reconstructed[end-truncation+2:end] .= conj.(reverse(compressed[2:end]))  # Restore symmetry
+
+                # Compute inverse FFT
+                update = real(ifft(reconstructed))
+
+                x_kp1 .= x_kp1 - update
+
+            elseif HS.iterations == 1
+                newFFTG_kcol = FFTW.fft(g_k - HS.g_km1)[1:truncation]
+                HS.FFTG_k = hcat(newFFTG_kcol,HS.FFTG_k)
+
+                gamma_k = (HS.FFTG_k'*HS.FFTG_k)^(-1)*(HS.FFTG_k'*fftg_k)
+
+                compressed = (HS.FFTX_k + HS.FFTG_k) * gamma_k
+
+                # Reconstruct full spectrum before inverse FFT
+                reconstructed = zeros(ComplexF64, length(x_k))  # Allocate memory only before inverse FFT
+                reconstructed[1:truncation] .= compressed
+                reconstructed[end-truncation+2:end] .= conj.(reverse(compressed[2:end]))  # Restore symmetry
+
+                update = real(ifft(reconstructed))
+
+                x_kp1 = x_kp1 - update
+
+            elseif HS.iterations == 0
+                gamma_k = NaN
+            end
+            
+            newFFTX_kcol = FFTW.fft(x_kp1 - x_k)[1:truncation]
+            HS.X_k = hcat(newFFTX_kcol,HS.X_k)
+            HS.g_km1 = g_k
+            HS.iterations += 1
+
+            midanalysisin = (gamma_k = gamma_k, residual = g_k)
+
+            liveanalysisin = (X_k = HS.FFTX_k, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
 
     else
         error("Unsupported methodname: $(aamethod.methodname)")
