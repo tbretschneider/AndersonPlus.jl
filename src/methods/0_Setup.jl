@@ -57,6 +57,18 @@ mutable struct DWTAAHistoricalStuff <: HistoricalStuff
     end
 end
 
+mutable struct RFAAHistoricalStuff <: HistoricalStuff
+    G_k::Matrix{Float64}  # Matrix of Float64
+    F_k::Matrix{Float64}  # Matrix of Float64
+    residual::Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function RFAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 1.0,0)
+    end
+end
+
 """
     initialise_historicalstuff(methodname::Symbol, x_k::Vector)
 
@@ -81,6 +93,8 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
         return FFTAAHistoricalStuff(length(x_0),method.methodparams.tf)
     elseif methodname == :dwtaa
         return DWTAAHistoricalStuff(length(x_0))
+    elseif methodname == :rfaa
+        return RFAAHistoricalStuff(length(x_0))
     else
         error("Unsupported AAMethod: $methodname")
     end
@@ -111,6 +125,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :faa => (cs = 0.1, kappabar = 1, m = 20),
         :fftaa => (m = 10, tf  = 0.9),
         :dwtaa => (m=10),
+        :rfaa => (m=10, profun = (it,len) -> (clamp(it/(2*len),0.0,1.0))),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -135,6 +150,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :faa => [:cs, :kappabar, :m],
         :fftaa => [:m, :tf],
         :dwtaa => [:m],
+        :rfaa => [:m, :probfun],
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -177,4 +193,5 @@ const SD = Dict(
     :faa => "Filtered (Pollock)",
     :fftaa => "Truncated Fourier Transformed History",
     :dwtaa => "Wavelet Transformed History",
+    :rfaa => "Randomised Filtering"
 )

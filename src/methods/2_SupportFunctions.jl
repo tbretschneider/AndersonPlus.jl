@@ -289,3 +289,17 @@ function compute_compression_ratio(residual_ratio::Float64, iteration::Int)
     return clamp(compression_ratio, 1.0, 50.0)
 end
 
+function sample_bool_vector(probabilities::Vector{Float64})
+    return rand(length(probabilities)) .> probabilities
+end
+
+function RandomFilter!(HS,probfun)
+    if HS.iterations in (0,1)
+        return NaN
+    end
+    probabilities = probfun(HS.iterations,size(HS.G_k,2))
+    filtered = sample_bool_vector(probabilities)
+    HS.G_k = HS.G_k[:,.!filtered]
+    HS.F_k = HS.F_k[:,.!filtered]
+    return filtered
+end
