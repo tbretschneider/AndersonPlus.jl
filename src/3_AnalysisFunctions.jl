@@ -139,7 +139,7 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 result = merge(result, (G_cond = cond(hcat(input.G...)),))
             elseif sym == :G_geocond
                 result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
-                if sym == :G_k_cond
+            elseif sym == :G_k_cond
                     try
                     result = merge(result, (G_k_cond = cond(input.G_k),))
                     catch e
