@@ -187,7 +187,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             HS.g_km1 = g_k
             HS.iterations += 1
 
-            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered)
+            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered,G_k = HS.G_k)
 
             liveanalysisin = (X_k = HS.X_k, filtered = filtered, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
 
