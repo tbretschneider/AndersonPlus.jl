@@ -125,7 +125,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :faa => (cs = 0.1, kappabar = 1, m = 20),
         :fftaa => (m = 10, tf  = 0.9),
         :dwtaa => (m=10),
-        :rfaa => (m=10, profun = (it,len) -> (clamp(it/(2*len),0.0,1.0))),
+        :rfaa => (m=10, profun = (it,len) -> ones(len)*clamp(it/(2*len),0.0,1.0)),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),

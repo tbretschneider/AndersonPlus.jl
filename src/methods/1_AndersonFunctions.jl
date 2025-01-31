@@ -334,8 +334,8 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             if HS.iterations > 0
 
                 if size(HS.G_k,2) > m
-                    HS.DWTG_k = HS.G_k[:,1:m]
-                    HS.DWTF_k = HS.F_k[:,1:m]
+                    HS.G_k = HS.G_k[:,1:m]
+                    HS.F_k = HS.F_k[:,1:m]
                 end
                 
                 GT_G = HS.G_k' * HS.G_k

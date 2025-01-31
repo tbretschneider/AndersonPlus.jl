@@ -195,3 +195,22 @@ end
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
 
+@testset "Test RFAA" begin
+    # Parameters
+    k0 = 8.0
+    N = 2047
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    Algorithm = AAAlgorithm(AAMethod(:rfaa,(m=10,probfun = (it,len) -> ones(len)*clamp(it/(2*len),0.0,1.0))),
+                            (maxit = 200, ))
+
+    Analyses = AAAnalysis([:residualnorm,:truehistlength,:G_k_cond,:G_k_geocond],
+                        [:residualnorm,:truehistlength,:G_k_cond,:G_k_geocond],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
+
