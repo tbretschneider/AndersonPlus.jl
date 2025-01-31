@@ -202,18 +202,7 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
     end
 end
 
-const SD = Dict(
-    :methodname => "Method Name",
-    :methodparams => "Method Parameters",
-    :algorithmparams => "Algorithm Parameters",
-    :convparams => "Convergence Parameters",
-    :iterations => "Iterations",
-    :vanilla => "Vanilla",
-    :paqr => "Pivoting Avoiding QR",
-    :faa => "Filtered (Pollock)",
-    :fftaa => "Truncated Fourier Transformed History",
-    :dwtaa => "Wavelet Transformed History",
-)
+
 
 """
     output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
