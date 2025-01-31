@@ -26,9 +26,17 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
         # Dynamically add fields based on the symbols in `midanalysis`
         for sym in midanalysis
             if sym == :G_k_cond
+                try
                 result = merge(result, (G_k_cond = cond(input.G_k),))
+                catch e
+                    result = merge(result, (G_k_cond = NaN,))
+                end
             elseif sym == :G_k_geocond
+                try
                 result = merge(result, (G_k_geocond = geometriccond(input.G_k),))
+                catch e
+                    result = merge(result, (G_k_cond = NaN,))
+                end
             elseif sym == :gamma_k_norm
                 result = merge(result, (gamma_k_norm = norm(input.gamma_k),))
             elseif sym == :alpha_k_norm
@@ -194,18 +202,7 @@ function output_liveanalysis(liveanalysis::NamedTuple, iterations::Int, updatefr
     end
 end
 
-const SD = Dict(
-    :methodname => "Method Name",
-    :methodparams => "Method Parameters",
-    :algorithmparams => "Algorithm Parameters",
-    :convparams => "Convergence Parameters",
-    :iterations => "Iterations",
-    :vanilla => "Vanilla",
-    :paqr => "Pivoting Avoiding QR",
-    :faa => "Filtered (Pollock)",
-    :fftaa => "Truncated Fourier Transformed History",
-    :dwtaa => "Wavelet Transformed History",
-)
+
 
 """
     output_postanalysis(postanalysis::NamedTuple, summary; line_width::Int = 80)
