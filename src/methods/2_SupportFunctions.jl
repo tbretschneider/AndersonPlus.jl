@@ -311,6 +311,6 @@ function RandomFilterLS!(HS,probfun)
     probabilities = probfun(HS.iterations,size(HS.Gcal_k,2)-1)
     filtered = vcat(true,sample_bool_vector(probabilities))
     HS.Gcal_k = HS.Gcal_k[:,.!filtered]
-    HS.Fcal_k = HS.Fcal_k[:,.!filtered]
+    HS.Xcal_k = HS.Xcal_k[:,.!filtered]
     return filtered
 end
