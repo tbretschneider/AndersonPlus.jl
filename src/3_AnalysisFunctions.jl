@@ -70,9 +70,17 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
             elseif sym == :G_geocond
                 result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
             elseif sym == :Gcal_k_cond
-                result = merge(result, (G_cond = cond(input.Gcal_k),))
+                try
+                result = merge(result, (Gcal_k_cond = cond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_cond = NaN,))
+                end
             elseif sym == :Gcal_k_geocond
+                try
                 result = merge(result, (Gcal_k_geocond = geometriccond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_geocond = NaN,))
+                end
             elseif sym == :residual
                 result = merge(result, (residual = input.residual,))
             elseif sym == :residualnorm
@@ -156,9 +164,17 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                         result = merge(result, (G_k_cond = NaN,))
                     end
             elseif sym == :Gcal_k_cond
-                result = merge(result, (G_cond = cond(input.Gcal_k),))
+                try
+                result = merge(result, (Gcal_k_cond = cond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_cond = NaN,))
+                end
             elseif sym == :Gcal_k_geocond
+                try
                 result = merge(result, (Gcal_k_geocond = geometriccond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_geocond = NaN,))
+                end
             end
         end
 
