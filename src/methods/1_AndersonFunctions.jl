@@ -364,6 +364,46 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             return midanalysis, liveanalysis
 
         end
+    elseif aamethod.methodname == :rflsaa
+        return function(HS::RFLSAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            m = aamethod.methodparams.m
+
+            if HS.iterations > 0
+                HS.Gcal_k = hcat(g_k - HS.g_km1,HS.Gcal_k)
+                if size(HS.Gcal_k,2) > m - 1
+                    HS.Gcal_k = HS.Gcal_k[:,1:m-1]
+                    HS.Xcal_k = HS.Xcal_k[:,1:m-1]
+                end
+
+                filtered = RandomFilterLS!(HS, aamethod.methodparams.probfun)
+
+                gamma_k = HS.Gcal_k \ g_k
+                        
+                x_kp1 .= x_k .+ g_k .- (HS.Xcal_k + HS.Gcal_k) * gamma_k 
+
+            elseif HS.iterations == 0
+                gamma_k = NaN
+		        filtered = NaN
+            end
+            
+            HS.Xcal_k = hcat(x_kp1 - x_k,HS.Xcal_k)
+            HS.g_km1 = g_k
+            HS.iterations += 1
+
+            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered,Gcal_k = HS.Gcal_k)
+
+            liveanalysisin = (Gcal_k = HS.Gcal_k, filtered = filtered, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
     else
         error("Unsupported methodname: $(aamethod.methodname)")
     end

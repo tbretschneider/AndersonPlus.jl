@@ -69,6 +69,18 @@ mutable struct RFAAHistoricalStuff <: HistoricalStuff
     end
 end
 
+mutable struct RFLSAAHistoricalStuff <: HistoricalStuff
+    Gcal_k::Matrix{Float64}  # Matrix of Float64
+    Xcal_k::Matrix{Float64}  # Matrix of Float64
+    g_km1::Vector{Float64}  # Vector of Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function RFLSAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), Vector{Float64}(undef,numrows), 0)
+    end
+end
+
 """
     initialise_historicalstuff(methodname::Symbol, x_k::Vector)
 
@@ -95,6 +107,8 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
         return DWTAAHistoricalStuff(length(x_0))
     elseif methodname == :rfaa
         return RFAAHistoricalStuff(length(x_0))
+    elseif methodname == :rflsaa
+        return RFLSAAHistoricalStuff(length(x_0))
     else
         error("Unsupported AAMethod: $methodname")
     end
@@ -125,7 +139,8 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :faa => (cs = 0.1, kappabar = 1, m = 20),
         :fftaa => (m = 10, tf  = 0.9),
         :dwtaa => (m=10),
-        :rfaa => (m=10, profun = (it,len) -> ones(len)*clamp(it/(2*len),0.0,1.0)),
+        :rfaa => (m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
+        :rflsaa => (m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -151,6 +166,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :fftaa => [:m, :tf],
         :dwtaa => [:m],
         :rfaa => [:m, :probfun],
+        :rflsaa => [:m, :probfun],
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -193,5 +209,6 @@ const SD = Dict(
     :faa => "Filtered (Pollock)",
     :fftaa => "Truncated Fourier Transformed History",
     :dwtaa => "Wavelet Transformed History",
-    :rfaa => "Randomised Filtering"
+    :rfaa => "Randomised Filtering",
+    :rflsaa => "Randomised Filtering for Least Squares",
 )

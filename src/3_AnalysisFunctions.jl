@@ -69,6 +69,10 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (G_cond = cond(hcat(input.G...)),))
             elseif sym == :G_geocond
                 result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
+            elseif sym == :Gcal_k_cond
+                result = merge(result, (G_cond = cond(input.Gcal_k),))
+            elseif sym == :Gcal_k_geocond
+                result = merge(result, (Gcal_k_geocond = geometriccond(input.Gcal_k),))
             elseif sym == :residual
                 result = merge(result, (residual = input.residual,))
             elseif sym == :residualnorm
@@ -151,6 +155,10 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                     catch e
                         result = merge(result, (G_k_cond = NaN,))
                     end
+            elseif sym == :Gcal_k_cond
+                result = merge(result, (G_cond = cond(input.Gcal_k),))
+            elseif sym == :Gcal_k_geocond
+                result = merge(result, (Gcal_k_geocond = geometriccond(input.Gcal_k),))
             end
         end
 
@@ -171,6 +179,8 @@ const AD = Dict(
     :G_geocond => "G Geometric Condition",
     :G_k_cond => "G Condition",
     :G_k_geocond => "G Geometric Condition",
+    :Gcal_k_cond => "Gcal Condition",
+    :Gcal_k_geocond => "Gcal Geometric Condition",
 )
 
 """

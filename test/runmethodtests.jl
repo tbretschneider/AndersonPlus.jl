@@ -213,4 +213,22 @@ end
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
 
+@testset "Test RFLSAA" begin
+    # Parameters
+    k0 = 8.0
+    N = 1000
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    Algorithm = AAAlgorithm(AAMethod(:rflsaa,(m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
+                            (maxit = 50, ))
+
+    Analyses = AAAnalysis([:residualnorm,:truehistlength,:Gcal_k_cond,:Gcal_k_geocond],
+                        [:residualnorm,:truehistlength,:Gcal_k_cond,:Gcal_k_geocond],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
 

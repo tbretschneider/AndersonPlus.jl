@@ -303,3 +303,14 @@ function RandomFilter!(HS,probfun)
     HS.F_k = HS.F_k[:,.!filtered]
     return filtered
 end
+
+function RandomFilterLS!(HS,probfun)
+    if HS.iterations in (0,1)
+        return NaN
+    end
+    probabilities = probfun(HS.iterations,size(HS.Gcal_k,2)-1)
+    filtered = vcat(true,sample_bool_vector(probabilities))
+    HS.Gcal_k = HS.Gcal_k[:,.!filtered]
+    HS.Fcal_k = HS.Fcal_k[:,.!filtered]
+    return filtered
+end
