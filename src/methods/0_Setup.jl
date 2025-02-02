@@ -81,6 +81,18 @@ mutable struct RFLSAAHistoricalStuff <: HistoricalStuff
     end
 end
 
+
+mutable struct quickAAHistoricalStuff <: HistoricalStuff
+    Gcal_k::Matrix{Float64}  # Matrix of Float64
+    Xcal_k::Matrix{Float64}  # Matrix of Float64
+    g_km1::Vector{Float64}  # Vector of Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function quickAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), Vector{Float64}(undef,numrows), 0)
+    end
+end
 """
     initialise_historicalstuff(methodname::Symbol, x_k::Vector)
 
