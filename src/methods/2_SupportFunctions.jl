@@ -337,15 +337,15 @@ function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
     A = inverse.data  # Extract the underlying matrix
     n = size(A, 1)
     α = A[index, index]
-    @assert α != 0 "Matrix is singular after removal"
 
     # Define the update vector
-    v = A[:, index] / √α
+    v = A[:, index]
 
     # Perform a symmetric rank-one update using BLAS
-    BLAS.syr!(-1.0, v, A)
+    BLAS.syr!('U',-inv(α), v, A)
 
     # Remove the corresponding row and column using views
-    return Symmetric(@view A[1:n-1, 1:n-1])
+    resize!(inverse,n-1,n-1)
+    inverse .= Symmetric(A[setdiff(1:n,index),setdiff(1:n,index)])
 end
 

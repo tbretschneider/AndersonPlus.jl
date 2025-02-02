@@ -76,7 +76,7 @@ using AndersonPlus: nl_reflector!
     @test length(x) == 0  # Ensure the vector remains empty
 end
 
-using AndersonPlus: updateinverse!
+using AndersonPlus: updateinverse!, Random
 
 @testset "updateinverse! Tests" begin
     Random.seed!(42)  # For reproducibility
@@ -94,9 +94,8 @@ using AndersonPlus: updateinverse!
         A_inv_exact = inv(A_reduced)
 
         # Check correctness
-        @test isapprox(A_inv_updated, A_inv_exact; atol=1e-6) "Inverse update incorrect at index $index"
-
+        @test isapprox(A_inv_updated, A_inv_exact; atol=1e-6)
         # Ensure symmetry is preserved
-        @test A_inv_updated ≈ A_inv_updated' "Updated inverse is not symmetric at index $index"
+        @test A_inv_updated ≈ A_inv_updated'
     end
 end
