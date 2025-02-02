@@ -314,3 +314,38 @@ function RandomFilterLS!(HS,probfun)
     HS.Xcal_k = HS.Xcal_k[:,.!filtered]
     return filtered
 end
+
+
+
+function filteringindices!(sin_k::Vector{Float64}, methodparams)
+    threshold_func = methodparams[:threshold_func]  # Extract threshold function
+    m = methodparams[:m]
+    thresholds = threshold_func(length(sin_k),m)   # Compute thresholds for each index
+
+    # Create a boolean vector indicating whether each entry should be filtered
+    filteredindices = sin_k .> thresholds
+
+    # Update sin_k to keep only the unfiltered values
+    sin_k .= sin_k[.!filteredindices]
+
+    return filteredindices
+end
+
+using LinearAlgebra.BLAS, Random
+
+function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
+    A = inverse.data  # Extract the underlying matrix
+    n = size(A, 1)
+    α = A[index, index]
+    @assert α != 0 "Matrix is singular after removal"
+
+    # Define the update vector
+    v = A[:, index] / √α
+
+    # Perform a symmetric rank-one update using BLAS
+    BLAS.syr!(-1.0, v, A)
+
+    # Remove the corresponding row and column using views
+    return Symmetric(@view A[1:n-1, 1:n-1])
+end
+

@@ -75,3 +75,28 @@ using AndersonPlus: nl_reflector!
     @test result == zero(Float64)
     @test length(x) == 0  # Ensure the vector remains empty
 end
+
+using AndersonPlus: updateinverse!
+
+@testset "updateinverse! Tests" begin
+    Random.seed!(42)  # For reproducibility
+    n = 10  # Matrix size
+    A = randn(n, n)
+    A = Symmetric(A'A)  # Ensure A is symmetric positive definite
+    A_inv = inv(A)  # Compute its inverse
+
+    for index in 1:n
+        A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
+        A_inv_updated = updateinverse!(A_inv_copy, index)
+
+        # Compute expected result by removing row/column and inverting
+        A_reduced = Symmetric(A[setdiff(1:n, index), setdiff(1:n, index)])
+        A_inv_exact = inv(A_reduced)
+
+        # Check correctness
+        @test isapprox(A_inv_updated, A_inv_exact; atol=1e-6) "Inverse update incorrect at index $index"
+
+        # Ensure symmetry is preserved
+        @test A_inv_updated ≈ A_inv_updated' "Updated inverse is not symmetric at index $index"
+    end
+end

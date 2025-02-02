@@ -404,6 +404,39 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             return midanalysis, liveanalysis
 
         end
+    elseif aamethod.methodname == :quickaa
+        return function(HS::quickAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            n_k = norm(g_k)
+            gtilde_k = g_k * inv(n_k)
+
+            sin_k = [HS.Gtilde_k[:,i]'*gtilde_k for i in 1:size(HS.Gtilde_k,2)]
+
+            filteredindices = filteringindices!(sin_k,aamethod.methodparams)
+
+            Filtering!(HS,filteredindices)
+
+            AddNew!(HS,sin_k,n_k)
+
+            alpha = HS.N_kinv*HS.GtildeTGtildeinv*HS.N_kinv
+
+            x_kp1 = HS.F_k * alpha
+
+            HS.iterations += 1
+
+            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered,Gcal_k = HS.Gcal_k)
+
+            liveanalysisin = (Gcal_k = HS.Gcal_k, filtered = filtered, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
     else
         error("Unsupported methodname: $(aamethod.methodname)")
     end
