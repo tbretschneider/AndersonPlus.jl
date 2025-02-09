@@ -90,6 +90,19 @@ mutable struct quickAAHistoricalStuff <: HistoricalStuff
     positions::Vector{Int}  # Vector of size (m)
     iterations::Int  # Integer counter
 
+    # Internal constructor (allows constructing from raw fields)
+    function quickAAHistoricalStuff(
+        GtildeTGtildeinv::Symmetric{Float64, Matrix{Float64}},
+        Ninv::Diagonal{Float64, Vector{Float64}},
+        F_k::Matrix{Float64},
+        Gtilde_k::Matrix{Float64},
+        sin_k::Vector{Float64},
+        positions::Vector{Int},
+        iterations::Int
+    )
+        return new(GtildeTGtildeinv, Ninv, F_k, Gtilde_k, sin_k, positions, iterations)
+    end
+
     # Constructor
     function quickAAHistoricalStuff(numrows::Int, m::Int)
         GtildeTGtildeinv = Symmetric(zeros(m, m))  # Symmetric matrix of size (m × m)
@@ -141,18 +154,19 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
     end
 end
 
+
+# Define a `copy` method
 function Base.copy(HS::quickAAHistoricalStuff)
     return quickAAHistoricalStuff(
-        copy(HS.GtildeTGtildeinv),
-        copy(HS.Ninv),
-        copy(HS.F_k),
-        copy(HS.Gtilde_k),
-        copy(HS.sin_k),
-        copy(HS.positions),
-        HS.iterations  # Integer fields don’t need `copy`
+        copy(HS.GtildeTGtildeinv),  # Copy Symmetric matrix
+        copy(HS.Ninv),  # Copy Diagonal matrix
+        copy(HS.F_k),  # Copy regular matrix
+        copy(HS.Gtilde_k),  # Copy regular matrix
+        copy(HS.sin_k),  # Copy vector
+        copy(HS.positions),  # Copy vector
+        HS.iterations  # Integer does not need copying
     )
 end
-
 
 ##########################################
 ########## Method Specific Stuff #########
