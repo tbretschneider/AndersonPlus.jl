@@ -309,3 +309,54 @@ using AndersonPlus: filteringindices, Filtering!
 
     # Check that sin_k values that are filtered are removed (this assumes Filtering! works as intended)
 end
+
+
+using AndersonPlus: quickAAHistoricalStuff, AddNew!
+
+
+@testset "AddNew! Function" begin
+    numrows = 4
+    m = 3
+
+    # Initialize test object
+    HS = quickAAHistoricalStuff(numrows, m)
+    HS.GtildeTGtildeinv .= Matrix(I, m, m)  # Identity matrix for simplicity
+    HS.positions .= [-1, 1, 2]  # First position is available
+    HS.sin_k .= [0.0, 0.5, 0.8]  # Initial sin_k values
+    HS.Ninv .= Diagonal([1.0, 2.0, 3.0])  # Initial diagonal values
+    HS.F_k .= zeros(numrows, m)  # Placeholder values
+    HS.Gtilde_k .= zeros(numrows, m)  # Placeholder values
+    HS.iterations = 10  # Arbitrary iteration count
+
+    # New values to be added
+    n_kinv = 4.0
+    fval = [1.0, 2.0, 3.0, 4.0]
+    gres = [0.1, 0.2, 0.3, 0.4]
+
+    # Apply AddNew!
+    AddNew!(HS, n_kinv, fval, gres)
+
+    # Test that it fills the first available position (-1 -> 10)
+    @test HS.positions == [10, 1, 2]
+
+    # Test that sin_k[index] is set to 1.0
+    @test HS.sin_k == [1.0, 0.5, 0.8]
+
+    # Test that Ninv diagonal is updated correctly
+    @test diag(HS.Ninv) == [4.0, 2.0, 3.0]
+
+    # Test that F_k and Gtilde_k store the correct values
+    @test HS.F_k[:, 1] == fval
+    @test HS.Gtilde_k[:, 1] == gres
+
+    # Now, test when no `-1` is available (forcing replacement)
+    HS.positions .= [1, 2, 3]  # No `-1` available, should replace index 1 (min position)
+    AddNew!(HS, n_kinv, fval, gres)
+
+    # The smallest position (index 1) should be replaced with iteration 10
+    @test HS.positions == [10, 2, 3]
+    @test HS.sin_k[1] == 1.0  # Ensure updated
+    @test HS.F_k[:, 1] == fval  # Ensure correct values
+    @test HS.Gtilde_k[:, 1] == gres  # Ensure correct values
+    @test diag(HS.Ninv) == [4.0, 2.0, 3.0]  # Check if diagonal update persists
+end
