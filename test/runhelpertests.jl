@@ -94,7 +94,7 @@ using AndersonPlus: updateinverse!, Random
         A_inv_exact = inv(A_reduced)
 
         # Check correctness
-        @test isapprox(A_inv_updated, A_inv_exact; atol=1e-6)
+        @test isapprox(A_inv_updated[setdiff(1:n, index), setdiff(1:n, index)], A_inv_exact; atol=1e-6)
         # Ensure symmetry is preserved
         @test A_inv_updated ≈ A_inv_updated'
     end

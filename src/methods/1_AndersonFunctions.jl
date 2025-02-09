@@ -409,18 +409,16 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
-            n_k = norm(g_k)
-            gtilde_k = g_k * inv(n_k)
+            n_kinv = inv(norm(g_k))
+            gtilde_k = g_k * n_kinv
 
-            sin_k = [HS.Gtilde_k[:,i]'*gtilde_k for i in 1:size(HS.Gtilde_k,2)]
+            AnglesUpdate!(HS, gtilde_k)
 
-            filteredindices = filteringindices!(sin_k,aamethod.methodparams)
+            Filtering!(HS,aamethod.methodparams)
 
-            Filtering!(HS,filteredindices)
+            AddNew!(HS,n_kinv)
 
-            AddNew!(HS,sin_k,n_k)
-
-            alpha = HS.N_kinv*HS.GtildeTGtildeinv*HS.N_kinv
+            alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv
 
             x_kp1 = HS.F_k * alpha
 

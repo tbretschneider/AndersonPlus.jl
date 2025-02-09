@@ -315,18 +315,32 @@ function RandomFilterLS!(HS,probfun)
     return filtered
 end
 
+function AnglesUpdate!(HS, gtilde_k)
+    for (i,position) in enumerate(HS.positions)
+        if position != -1
+            HS.sin_k[i] .= dot(gtilde_k, HS.Gtilde_k[:,i])
+        end
+    end
+end
 
+function Filtering!(HS,methodparams)
+    filteredindices = filteringindices(HS,methodparams)
+    filtersforview = filteredindices[HS.positions .!= -1]
 
-function filteringindices!(sin_k::Vector{Float64}, methodparams)
+    for x in reverse((1:length(filtersforview))[filtersforview])
+        updateinverse!(@view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1],x)
+        (@view HS.positions[HS.positions .!= -1])[x] .= -1
+    end
+
+end
+
+function filteringindices(HS, methodparams)
     threshold_func = methodparams[:threshold_func]  # Extract threshold function
     m = methodparams[:m]
-    thresholds = threshold_func(length(sin_k),m)   # Compute thresholds for each index
+    thresholds = threshold_func(HS.positions,HS.iterations)   # Compute thresholds for each index
 
     # Create a boolean vector indicating whether each entry should be filtered
-    filteredindices = sin_k .> thresholds
-
-    # Update sin_k to keep only the unfiltered values
-    sin_k .= sin_k[.!filteredindices]
+    filteredindices = HS.sin_k .> thresholds
 
     return filteredindices
 end
@@ -335,7 +349,6 @@ using LinearAlgebra.BLAS, Random
 
 function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
     A = inverse.data  # Extract the underlying matrix
-    n = size(A, 1)
     α = A[index, index]
 
     # Define the update vector
@@ -343,9 +356,39 @@ function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
 
     # Perform a symmetric rank-one update using BLAS
     BLAS.syr!('U',-inv(α), v, A)
+end
 
-    # Remove the corresponding row and column using views
-    resize!(inverse,n-1,n-1)
-    inverse .= Symmetric(A[setdiff(1:n,index),setdiff(1:n,index)])
+function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
+    A = inverse.data  # Extract the underlying matrix
+    B = view(A, [1:index-1; index+1:end], [1:index-1; index+1:end])
+    d = view(A,index,index)
+    lr = view(A,index,[1:index-1;index+1:end])
+    lc = view(A,[1:index-1;index+1:end],index)
+    u2 = B*u1
+    lc = -u3
+    lr = -u3'
+    d = inv(1 - dot(u1,u2))
+    u3 = d*u2
+    B += d * u2 * u2'
+end
+
+function AddNew!(HS,n_kinv)
+    #no -1 somewhere first. Need to find position
+    index = findfirst(x -> x == -1, HS.positions)
+    if isnothing(index)
+        index = argmin(HS.positions)
+        HS.positions[index] .= -1
+        updateinverse!(@view HS.GtildeTGtildeinv,index)
+        replaceinverse!(HS.GtildeTGtildeinv,index,HS.sin_k[1:index-1;index+1:end])
+        HS.Ninv.diag[index] = n_kinv
+        HS.positions[index] .= HS.iterations
+    else
+        u1 = HS.sin_k[HS.positions .!= -1]
+        HS.positions[index] .= HS.iterations
+        replaceinverse!(@view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1],
+        index,
+        u1)
+        HS.Ninv.diag[index] = n_kinv
+    end
 end
 
