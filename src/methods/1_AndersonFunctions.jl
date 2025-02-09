@@ -407,8 +407,9 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
     elseif aamethod.methodname == :quickaa
         return function(HS::quickAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
 
-            GFix!(x_kp1,x_k)
-            g_k = x_kp1 .- x_k
+            f_k = copy(x_k)
+            GFix!(f_k,x_k)
+            g_k = f_k .- x_k
             n_kinv = inv(norm(g_k))
             gtilde_k = g_k * n_kinv
 
@@ -416,7 +417,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             Filtering!(HS,aamethod.methodparams)
 
-            AddNew!(HS,n_kinv,x_kp1,gtilde_k)
+            AddNew!(HS,n_kinv,f_k,gtilde_k)
 
             alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
 
