@@ -348,6 +348,9 @@ end
 
 using LinearAlgebra.BLAS, Random
 
+# Really nice as we can pass extra stuff - even for multiplication 
+# as zeros are inserted in the rest of the places
+
 function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
     A = inverse.data  # Access underlying matrix (modifies in place)
     α = inverse[index, index]
@@ -363,16 +366,13 @@ function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
 end
 
 function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
-    insert!(u1,index,1.0)
     A = inverse.data  # Extract the underlying matrix
     d = inverse[index,index]
-    u2 = BLAS.symv('U', A, u1)
-    #u2 = B*u1
+    u2 = BLAS.symv('U', A, u1) #Calculates A*u1
     d = inv(1 - dot(u1,u2))
     u3 = d*u2
     u3[index] = d
-    BLAS.syr!('U', d, u2, B)  # Only updates upper triangular part
-    #B += d * u2 * u2'
+    BLAS.syr!('U', d, u2, A)  # Only updates upper triangular part, calculates A + d*u2*u2'
     A[index,vcat(1:index-1,index+1:end)] = -u3'
     A[vcat(1:index-1,index+1:end),index] = -u3
     inverse[index,index] = d
@@ -385,18 +385,18 @@ function AddNew!(HS,n_kinv)
         index = argmin(HS.positions)
         HS.positions[index] .= -1
         updateinverse!(HS.GtildeTGtildeinv,index)
+        HS.sin_k[index] = 1.0
         replaceinverse!(HS.GtildeTGtildeinv,
 			index,
-			@view HS.sin_k[vcat(1:index-1,index+1:end)])
+			HS.sin_k)
         HS.Ninv.diag[index] = n_kinv
         HS.positions[index] .= HS.iterations
     else
-        u1 = @view HS.sin_k[HS.positions .!= -1]
-        HS.positions[index] .= HS.iterations
-	B = @view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1]
+        HS.positions[index] = HS.iterations
+        HS.sin_k[index] = 1.0
         replaceinverse!(B,
         index,
-        u1)
+        HS.sin_k)
         HS.Ninv.diag[index] = n_kinv
     end
 end
