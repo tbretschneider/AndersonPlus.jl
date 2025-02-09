@@ -107,8 +107,10 @@ using AndersonPlus: replaceinverse!
     A = Symmetric(A'A)  # Ensure A is symmetric positive definite
     A_copy = copy(A)
     for index in 1:10
+        Aloop = copy(A)
         B = @view A[setdiff(1:10,n),setdiff(1:10,n)]
         B = inv(B)
+        A[setdiff(1:10,n),setdiff(1:10,n)] .= B
         @test isapprox(A[setdiff(1:10,n),setdiff(1:10,n)]*A_copy[setdiff(1:10,n),setdiff(1:10,n)], I(9))
     end
 
