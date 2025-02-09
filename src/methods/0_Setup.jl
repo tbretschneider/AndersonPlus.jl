@@ -141,6 +141,18 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
     end
 end
 
+function Base.copy(HS::quickAAHistoricalStuff)
+    return quickAAHistoricalStuff(
+        copy(HS.GtildeTGtildeinv),
+        copy(HS.Ninv),
+        copy(HS.F_k),
+        copy(HS.Gtilde_k),
+        copy(HS.sin_k),
+        copy(HS.positions),
+        HS.iterations  # Integer fields don’t need `copy`
+    )
+end
+
 
 ##########################################
 ########## Method Specific Stuff #########
