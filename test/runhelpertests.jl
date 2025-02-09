@@ -354,6 +354,8 @@ using AndersonPlus: quickAAHistoricalStuff, AddNew!
 
     HS.iterations += 1
 
+    HS_1 = copy(HS)
+
     x2 = copy(x1)
     Problem.GFix!(x2,x1)
     g_1 = x2 - x1
@@ -374,6 +376,8 @@ using AndersonPlus: quickAAHistoricalStuff, AddNew!
     x2 = HS.F_k * alpha
 
     HS.iterations += 1
+
+    HS_2 = copy(HS)
 
     x3 = copy(x2)
     Problem.GFix!(x3,x2)
@@ -398,6 +402,11 @@ using AndersonPlus: quickAAHistoricalStuff, AddNew!
     GTG = G_k'*G_k
     afiz = inv(GTG)*ones(3)
     afiz /= sum(afiz)
+
+
+    HS.iterations += 1
+
+    HS_3 = copy(HS)
 
     @test afiz ≈ alpha[1:3]
 end
