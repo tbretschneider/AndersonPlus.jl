@@ -149,7 +149,7 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                     truehistlength = sum(.!input.filtered)
                 end
                 if haskey(input, :positions)
-                    truehistlength = sum([input.positions .!= -1])
+                    truehistlength = sum(input.positions .!= -1)
                 end
                 result = merge(result, (truehistlength = truehistlength,))
             elseif sym == :G_cond
