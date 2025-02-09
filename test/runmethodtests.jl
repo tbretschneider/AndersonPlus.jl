@@ -249,4 +249,22 @@ end
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
 end
 
+@testset "Compare Vanilla" begin
+    # Parameters
+    k0 = 8.0
+    N = 1000
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    Algorithm = AAAlgorithm(AAMethod(:vanilla,(m=10,)),
+                            (maxit = 200, ))
+
+    Analyses = AAAnalysis([],
+                        [:residualnorm],
+                        0,false)
+                    
+    Output = AASolve(AAInput(Problem,Algorithm,Analyses))
+end
+
 
