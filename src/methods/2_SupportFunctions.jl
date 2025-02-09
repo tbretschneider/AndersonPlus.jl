@@ -364,10 +364,10 @@ end
 
 function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
     A = inverse.data  # Extract the underlying matrix
-    B = @view A[vcat(1:index-1, index+1:end), vcat(1:index-1, index+1:end)]
-    d = @view A[index,index]
-    lr = @view A[index,vcat(1:index-1,index+1:end)]
-    lc = @view A[vcat(1:index-1,index+1:end),index]
+    B = @view inverse[vcat(1:index-1, index+1:end), vcat(1:index-1, index+1:end)]
+    d = @view inverse[index,index]
+    lr = @view inverse[index,vcat(1:index-1,index+1:end)]
+    lc = @view inverse[vcat(1:index-1,index+1:end),index]
     u2 = B*u1
     lc = -u3
     lr = -u3'

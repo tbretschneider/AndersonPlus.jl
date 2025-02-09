@@ -97,3 +97,19 @@ using AndersonPlus: updateinverse!, Random
         @test A_inv_copy ≈ A_inv_copy'
 	end
 end
+
+using AndersonPlus: replaceinverse!
+
+@testset "Test replaceinverse!" begin
+    Random.seed!(35)  # For reproducibility
+    n = 10  # Matrix size
+    A = randn(n, n)
+    A = Symmetric(A'A)  # Ensure A is symmetric positive definite
+    A_copy = copy(A)
+    for index in 1:10
+        B = @view A[setdiff(1:10,n),setdiff(1:10,n)]
+        B = inv(B)
+        @test isapprox(A[setdiff(1:10,n),setdiff(1:10,n)]*A_copy[setdiff(1:10,n),setdiff(1:10,n)], I(9))
+    end
+
+end
