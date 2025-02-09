@@ -416,17 +416,17 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             Filtering!(HS,aamethod.methodparams)
 
-            AddNew!(HS,n_kinv)
+            AddNew!(HS,n_kinv,x_kp1,gtilde_k)
 
-            alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv
+            alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
 
             x_kp1 = HS.F_k * alpha
 
             HS.iterations += 1
 
-            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered,Gcal_k = HS.Gcal_k)
+            midanalysisin = (residual = g_k,GtildeTGtildeinv = HS.GtildeTGtildeinv)
 
-            liveanalysisin = (Gcal_k = HS.Gcal_k, filtered = filtered, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+            liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
 
             midanalysis = midanalysisfunc(midanalysisin)
 

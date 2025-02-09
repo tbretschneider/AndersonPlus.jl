@@ -76,9 +76,9 @@ using AndersonPlus: nl_reflector!
     @test length(x) == 0  # Ensure the vector remains empty
 end
 
-using AndersonPlus: updateinverse!, Random
+using AndersonPlus: removeinverse!, Random
 
-@testset "updateinverse! Tests" begin
+@testset "removeinverse! Tests" begin
     Random.seed!(42)  # For reproducibility
     n = 10  # Matrix size
     A = randn(n, n)
@@ -86,7 +86,7 @@ using AndersonPlus: updateinverse!, Random
     A_inv = inv(A)  # Compute its inverse
 	for index in 1:10
         A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
-        updateinverse!(A_inv_copy,index)
+        removeinverse!(A_inv_copy,index)
 
         # Compute expected result by removing row/column and inverting
 	A_inv_exact = inv(A[setdiff(1:n,index),setdiff(1:n,index)])
@@ -115,7 +115,7 @@ using AndersonPlus: updateinverse!, Random
 
     index = 5
     A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
-    updateinverse!(A_inv_copy,index)
+    removeinverse!(A_inv_copy,index)
 
         # Compute expected result by removing row/column and inverting
 	A_inv_exact = inv(A[setdiff(1:n,[index,3]),setdiff(1:n,[index,3])])
@@ -150,7 +150,7 @@ using AndersonPlus: addinverse!
         #First make small...
 
         XTXloopinv = Symmetric(inv(XTXloop))  # Ensure in-place updates don't affect other tests
-        updateinverse!(XTXloopinv,index)
+        removeinverse!(XTXloopinv,index)
 
         newidentity = I(10)
         newidentity[index,index] = 0
@@ -190,52 +190,51 @@ end
     XTX_copy = copy(XTX)
 
 
-        XTXloop = copy(XTX)
+    XTXloop = copy(XTX)
 
-        #First make small...
+    #First make small...
 
-        XTXloopinv = Symmetric(inv(XTXloop))  # Ensure in-place updates don't affect other tests
-        updateinverse!(XTXloopinv,5)
+    XTXloopinv = Symmetric(inv(XTXloop))
+    removeinverse!(XTXloopinv,5)
 
-	    @test isapprox(XTXloopinv,XTXloopinv')
-	    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,5),setdiff(1:n,5)],I(10)[setdiff(1:n,5),setdiff(1:n,5)])
-        @test isapprox((XTXloopinv[setdiff(1:n,5),setdiff(1:n,5)]*XTX[setdiff(1:n,5),setdiff(1:n,5)]),I(9))
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,5),setdiff(1:n,5)],I(10)[setdiff(1:n,5),setdiff(1:n,5)])
+    @test isapprox((XTXloopinv[setdiff(1:n,5),setdiff(1:n,5)]*XTX[setdiff(1:n,5),setdiff(1:n,5)]),I(9))
 
-        updateinverse!(XTXloopinv,6)
-
-
-	    @test isapprox(XTXloopinv,XTXloopinv')
-	    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])],I(10)[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])])
-        @test isapprox((XTXloopinv[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])]*XTX[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])]),I(8))
+    removeinverse!(XTXloopinv,6)
 
 
-        updateinverse!(XTXloopinv,8)
-
-        @test isapprox(XTXloopinv,XTXloopinv')
-	    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])],I(10)[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])])
-        @test isapprox((XTXloopinv[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])]*XTX[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])]),I(7))
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])],I(10)[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])]*XTX[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])]),I(8))
 
 
-        #Now add back in the column and hopefully we get back to what we had...
+    removeinverse!(XTXloopinv,8)
 
-        addinverse!(XTXloopinv,6,XTXloop[6,1:n])
-
-        @test isapprox(XTXloopinv,XTXloopinv')
-	    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])],I(10)[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])])
-        @test isapprox((XTXloopinv[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])]*XTX[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])]),I(8))
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])],I(10)[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])]*XTX[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])]),I(7))
 
 
-        addinverse!(XTXloopinv,5,XTXloop[5,1:n])
+    #Now add back in the column and hopefully we get back to what we had...
 
-        @test isapprox(XTXloopinv,XTXloopinv')
-	    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[8]),setdiff(1:n,[8])],I(10)[setdiff(1:n,[8]),setdiff(1:n,[8])])
-        @test isapprox((XTXloopinv[setdiff(1:n,[8]),setdiff(1:n,[8])]*XTX[setdiff(1:n,[8]),setdiff(1:n,[8])]),I(9))
+    addinverse!(XTXloopinv,6,XTXloop[6,1:n])
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])],I(10)[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])]*XTX[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])]),I(8))
 
 
-        addinverse!(XTXloopinv,8,XTXloop[8,1:n])
+    addinverse!(XTXloopinv,5,XTXloop[5,1:n])
 
-        @test isapprox(XTXloopinv,XTXloopinv')
-	    @test isapprox(XTXloopinv*XTX,I(10))
-    end
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[8]),setdiff(1:n,[8])],I(10)[setdiff(1:n,[8]),setdiff(1:n,[8])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[8]),setdiff(1:n,[8])]*XTX[setdiff(1:n,[8]),setdiff(1:n,[8])]),I(9))
+
+
+    addinverse!(XTXloopinv,8,XTXloop[8,1:n])
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox(XTXloopinv*XTX,I(10))
 
 end

@@ -81,18 +81,31 @@ mutable struct RFLSAAHistoricalStuff <: HistoricalStuff
     end
 end
 
-
 mutable struct quickAAHistoricalStuff <: HistoricalStuff
-    Gcal_k::Matrix{Float64}  # Matrix of Float64
-    Xcal_k::Matrix{Float64}  # Matrix of Float64
-    g_km1::Vector{Float64}  # Vector of Float64
-    iterations::Int  # Integer
+    GtildeTGtildeinv::Symmetric{Float64, Matrix{Float64}}  # Symmetric matrix of size (m × m)
+    Ninv::Diagonal{Float64, Vector{Float64}}  # Diagonal matrix of size (m × m)
+    F_k::Matrix{Float64}  # Regular matrix of size (numrows × m)
+    Gtilde_k::Matrix{Float64}  # Regular matrix of size (numrows × m)
+    sin_k::Vector{Float64}  # Vector of size (m)
+    positions::Vector{Int}  # Vector of size (m)
+    iterations::Int  # Integer counter
 
-    # Constructor with default empty values
-    function quickAAHistoricalStuff(numrows::Int)
-        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), Vector{Float64}(undef,numrows), 0)
+    # Constructor
+    function quickAAHistoricalStuff(numrows::Int, m::Int)
+        GtildeTGtildeinv = Symmetric(zeros(m, m))  # Symmetric matrix of size (m × m)
+        Ninv = Diagonal(zeros(m))  # Diagonal matrix of size (m × m)
+        F_k = zeros(numrows, m)  # Regular matrix (numrows × m)
+        Gtilde_k = zeros(numrows, m)  # Regular matrix (numrows × m)
+        sin_k = zeros(m)  # Vector of size (m)
+        positions = fill(-1, m)  # Vector of size (m), initialized to -1
+        iterations = 0  # Start at zero iterations
+
+        return new(GtildeTGtildeinv, Ninv, F_k, Gtilde_k, sin_k, positions, iterations)
     end
 end
+
+
+
 """
     initialise_historicalstuff(methodname::Symbol, x_k::Vector)
 
@@ -121,6 +134,8 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
         return RFAAHistoricalStuff(length(x_0))
     elseif methodname == :rflsaa
         return RFLSAAHistoricalStuff(length(x_0))
+    elseif methodname == :quickaa
+        return quickAAHistoricalStuff(length(x_0),method.methodparams.m)
     else
         error("Unsupported AAMethod: $methodname")
     end
@@ -153,6 +168,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :dwtaa => (m=10),
         :rfaa => (m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
         :rflsaa => (m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
+        :quickaa => (m=10, threshold_func = (itnums, curr) -> [1.0 for i in 1:length(itnums)]),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -179,6 +195,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :dwtaa => [:m],
         :rfaa => [:m, :probfun],
         :rflsaa => [:m, :probfun],
+        :quickaa => [:m, :threshold_func],
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -223,4 +240,5 @@ const SD = Dict(
     :dwtaa => "Wavelet Transformed History",
     :rfaa => "Randomised Filtering",
     :rflsaa => "Randomised Filtering for Least Squares",
+    :quickaa => "Rank one updates to inverse...",
 )

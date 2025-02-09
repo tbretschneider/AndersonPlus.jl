@@ -315,43 +315,7 @@ function RandomFilterLS!(HS,probfun)
     return filtered
 end
 
-function AnglesUpdate!(HS, gtilde_k)
-    for (i,position) in enumerate(HS.positions)
-        if position != -1
-            HS.sin_k[i] .= dot(gtilde_k, HS.Gtilde_k[:,i])
-        end
-    end
-end
-
-function Filtering!(HS,methodparams)
-    filteredindices = filteringindices(HS,methodparams)
-    filtersforview = filteredindices[HS.positions .!= -1]
-
-    for x in reverse((1:length(filtersforview))[filtersforview])
-        updateinverse!(@view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1]
-		       ,x)
-        (@view HS.positions[HS.positions .!= -1])[x] .= -1
-    end
-
-end
-
-function filteringindices(HS, methodparams)
-    threshold_func = methodparams[:threshold_func]  # Extract threshold function
-    m = methodparams[:m]
-    thresholds = threshold_func(HS.positions,HS.iterations)   # Compute thresholds for each index
-
-    # Create a boolean vector indicating whether each entry should be filtered
-    filteredindices = HS.sin_k .> thresholds
-
-    return filteredindices
-end
-
-using LinearAlgebra.BLAS, Random
-
-# Really nice as we can pass extra stuff - even for multiplication 
-# as zeros are inserted in the rest of the places
-
-function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
+function removeinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
     A = inverse.data  # Access underlying matrix (modifies in place)
     α = inverse[index, index]
 
@@ -378,26 +342,60 @@ function addinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
     inverse[index,index] = d
 end
 
-function AddNew!(HS,n_kinv)
+function AnglesUpdate!(HS, gtilde_k)
+    for (i,position) in enumerate(HS.positions)
+        if position != -1
+            HS.sin_k[i] .= dot(gtilde_k, HS.Gtilde_k[:,i])
+        end
+    end
+end
+
+function filteringindices(HS, methodparams)
+    threshold_func = methodparams[:threshold_func]  # Extract threshold function
+    m = methodparams[:m]
+    thresholds = threshold_func(HS.positions,HS.iterations)   # Compute thresholds for each index
+
+    # Create a boolean vector indicating whether each entry should be filtered
+    filteredindices = HS.sin_k .> thresholds
+
+    return filteredindices
+end
+
+function Filtering!(HS,methodparams)
+    filteredindices = filteringindices(HS,methodparams)
+    filtersforview = filteredindices[HS.positions .!= -1]
+
+    for index in reverse((1:length(filteredindices))[filteredindices])
+        removeinverse!(HS.GtildeTGtildeinv,index)
+        HS.positions[index] = -1
+    end
+end
+
+
+using LinearAlgebra.BLAS, Random
+
+# Really nice as we can pass extra stuff - even for multiplication 
+# as zeros are inserted in the rest of the places
+
+function AddNew!(HS,n_kinv,fval,gres)
     #no -1 somewhere first. Need to find position
     index = findfirst(x -> x == -1, HS.positions)
     if isnothing(index)
         index = argmin(HS.positions)
-        HS.positions[index] .= -1
-        updateinverse!(HS.GtildeTGtildeinv,index)
+        removeinverse!(HS.GtildeTGtildeinv,index)
         HS.sin_k[index] = 1.0
         addinverse!(HS.GtildeTGtildeinv,
 			index,
-			HS.sin_k)
-        HS.Ninv.diag[index] = n_kinv
-        HS.positions[index] .= HS.iterations
+			HS.sin_k)  
     else
-        HS.positions[index] = HS.iterations
         HS.sin_k[index] = 1.0
         addinverse!(HS.GtildeTGtildeinv,
         index,
         HS.sin_k)
-        HS.Ninv.diag[index] = n_kinv
     end
+    HS.F_k[:,index] = fval
+    HS.Ninv.diag[index] = n_kinv
+    HS.positions[index] = HS.iterations
+    HS.Gtilde_k[:,i] = gres
 end
 
