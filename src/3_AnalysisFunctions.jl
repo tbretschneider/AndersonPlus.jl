@@ -189,7 +189,7 @@ end
 
 using Printf
 
-const AD = Dict(
+AD = Dict(
     :residualnorm => "Res Norm",
     :residual_ratio => "Res Ratio",
     :alpha_k_norm => "Coeff. Norm",
@@ -201,6 +201,7 @@ const AD = Dict(
     :G_k_geocond => "G Geometric Condition",
     :Gcal_k_cond => "Gcal Condition",
     :Gcal_k_geocond => "Gcal Geometric Condition",
+    :positions => "Positions",
 )
 
 """

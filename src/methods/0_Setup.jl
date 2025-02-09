@@ -227,7 +227,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
 end
 
 
-const SD = Dict(
+SD = Dict(
     :methodname => "Method Name",
     :methodparams => "Method Parameters",
     :algorithmparams => "Algorithm Parameters",
