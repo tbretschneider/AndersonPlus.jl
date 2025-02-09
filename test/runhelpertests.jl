@@ -128,18 +128,18 @@ using AndersonPlus: updateinverse!, Random
 
 end
 
-using AndersonPlus: replaceinverse!
+using AndersonPlus: addinverse!
 
-@testset "Test replaceinverse!" begin
+@testset "Test addinverse!" begin
     Random.seed!(35)  # For reproducibility
     n = 10  # Matrix size
     History = randn(30, n)
 
-    for i in 1:size(A, 2)
-        A[:, i] /= norm(A[:, i])  # Normalize column i
+    for i in 1:size(History, 2)
+        History[:, i] /= norm(History[:, i])  # Normalize column i
     end
 
-    XTX = Symmetric(A'A)  # Ensure A is symmetric positive definite
+    XTX = Symmetric(History'History)  # Ensure A is symmetric positive definite
 
     XTX_copy = copy(XTX)
 
@@ -149,19 +149,20 @@ using AndersonPlus: replaceinverse!
 
         #First make small...
 
-        XTXloopinv = copy(Symmetric(inv(XTXloop)))  # Ensure in-place updates don't affect other tests
+        XTXloopinv = Symmetric(inv(XTXloop))  # Ensure in-place updates don't affect other tests
         updateinverse!(XTXloopinv,index)
 
         newidentity = I(10)
-        newidentity[index,index] .= 0
+        newidentity[index,index] = 0
 
         # Check we have small inverse
-        @test isapprox((XTXloopinv*XTX),newidentity)
+	@test isapprox(XTXloopinv,XTXloopinv')
+	@test isapprox((XTXloopinv*XTX)[setdiff(1:n,index),setdiff(1:n,index)],I(10)[setdiff(1:n,index),setdiff(1:n,index)];atol = 1e-8)
         @test isapprox((XTXloopinv[setdiff(1:n,index),setdiff(1:n,index)]*XTX[setdiff(1:n,index),setdiff(1:n,index)]),I(9))
 
         #Now add back in the column and hopefully we get back to what we had...
 
-        replaceinverse!(XTXloopinv,index,XTXloop[index,1:n])
+        addinverse!(XTXloopinv,index,XTXloop[index,1:n])
 
 
 

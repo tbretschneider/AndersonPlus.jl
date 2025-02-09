@@ -373,8 +373,8 @@ function addinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
     u3 = d*u2
     u3[index] = d
     BLAS.syr!('U', d, u2, A)  # Only updates upper triangular part, calculates A + d*u2*u2'
-    A[index,vcat(1:index-1,index+1:end)] = -u3'
-    A[vcat(1:index-1,index+1:end),index] = -u3
+    A[index,:] = -u3'
+    A[:,index] = -u3
     inverse[index,index] = d
 end
 
