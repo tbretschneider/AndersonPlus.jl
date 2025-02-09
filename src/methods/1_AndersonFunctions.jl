@@ -426,7 +426,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             HS.iterations += 1
 
-            midanalysisin = (residual = g_k, GtildeTGtildeinv = HS.GtildeTGtildeinv,positions = HS.positions,alpha = alpha,HS=HS)
+            midanalysisin = (residual = g_k, GtildeTGtildeinv = HS.GtildeTGtildeinv,positions = HS.positions,alpha = alpha,HisStuf=HS)
 
             liveanalysisin = (iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k,positions = HS.positions)
 
