@@ -98,19 +98,24 @@ using AndersonPlus: updateinverse!, Random
 	end
 
 
-
+    # Testing if we can just work with big matrix????? Would be very cool!
 	
     Random.seed!(42)  # For reproducibility
     n = 10  # Matrix size
     A = randn(n, n)
     A = Symmetric(A'A)  # Ensure A is symmetric positive definite
-    A.data[3,1:10] = 0.0
-    A.data[1:10,3] = 0.0
+
     A_inv = copy(A)
+
     A_inv.data[setdiff(1:10,3),setdiff(1:10,3)] = inv(@view A[setdiff(1:10,3),setdiff(1:10,3)])
+
+    A_inv.data[3,1:10] .= 0.0
+    
+    A_inv.data[1:10,3] .= 0.0
+
     index = 5
-        A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
-        updateinverse!(A_inv_copy,index)
+    A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
+    updateinverse!(A_inv_copy,index)
 
         # Compute expected result by removing row/column and inverting
 	A_inv_exact = inv(A[setdiff(1:n,[index,3]),setdiff(1:n,[index,3])])

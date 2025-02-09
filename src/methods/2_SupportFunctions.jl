@@ -363,13 +363,14 @@ function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
 end
 
 function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
+    insert!(u1,index,1.0)
     A = inverse.data  # Extract the underlying matrix
-    B = @view A[vcat(1:index-1, index+1:end), vcat(1:index-1, index+1:end)]
     d = inverse[index,index]
-    u2 = BLAS.symv('U', B, u1)
+    u2 = BLAS.symv('U', A, u1)
     #u2 = B*u1
     d = inv(1 - dot(u1,u2))
     u3 = d*u2
+    u3[index] = d
     BLAS.syr!('U', d, u2, B)  # Only updates upper triangular part
     #B += d * u2 * u2'
     A[index,vcat(1:index-1,index+1:end)] = -u3'
