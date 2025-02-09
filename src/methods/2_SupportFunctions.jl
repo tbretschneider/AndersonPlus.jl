@@ -328,7 +328,8 @@ function Filtering!(HS,methodparams)
     filtersforview = filteredindices[HS.positions .!= -1]
 
     for x in reverse((1:length(filtersforview))[filtersforview])
-        updateinverse!(@view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1],x)
+        updateinverse!(@view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1]
+		       ,x)
         (@view HS.positions[HS.positions .!= -1])[x] .= -1
     end
 
@@ -360,10 +361,10 @@ end
 
 function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
     A = inverse.data  # Extract the underlying matrix
-    B = view(A, [1:index-1; index+1:end], [1:index-1; index+1:end])
-    d = view(A,index,index)
-    lr = view(A,index,[1:index-1;index+1:end])
-    lc = view(A,[1:index-1;index+1:end],index)
+    B = @view A[vcat(1:index-1, index+1:end), vcat(1:index-1, index+1:end)]
+    d = @view A[index,index]
+    lr = @view A[index,vcat(1:index-1,index+1:end)]
+    lc = @view A[vcat(1:index-1,index+1:end),index]
     u2 = B*u1
     lc = -u3
     lr = -u3'
@@ -378,14 +379,17 @@ function AddNew!(HS,n_kinv)
     if isnothing(index)
         index = argmin(HS.positions)
         HS.positions[index] .= -1
-        updateinverse!(@view HS.GtildeTGtildeinv,index)
-        replaceinverse!(HS.GtildeTGtildeinv,index,HS.sin_k[1:index-1;index+1:end])
+        updateinverse!(HS.GtildeTGtildeinv,index)
+        replaceinverse!(HS.GtildeTGtildeinv,
+			index,
+			@view HS.sin_k[vcat(1:index-1,index+1:end)])
         HS.Ninv.diag[index] = n_kinv
         HS.positions[index] .= HS.iterations
     else
-        u1 = HS.sin_k[HS.positions .!= -1]
+        u1 = @view HS.sin_k[HS.positions .!= -1]
         HS.positions[index] .= HS.iterations
-        replaceinverse!(@view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1],
+	B = @view HS.GtildeTGtildeinv[HS.positions .!= -1,HS.positions .!= -1]
+        replaceinverse!(B,
         index,
         u1)
         HS.Ninv.diag[index] = n_kinv
