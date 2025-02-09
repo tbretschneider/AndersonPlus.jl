@@ -86,7 +86,7 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
             elseif sym == :residualnorm
                 result = merge(result, (residualnorm = norm(input.residual),))
             elseif sym == :positions
-                result = merge(result, (positions = input.positions, ))
+                result = merge(result, (positions = copy(input.positions), ))
             end
         end
 
@@ -148,6 +148,9 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 if haskey(input, :filtered)
                     truehistlength = sum(.!input.filtered)
                 end
+                if haskey(input, :positions)
+                    truehistlength = sum([input.positions .!= -1])
+                end
                 result = merge(result, (truehistlength = truehistlength,))
             elseif sym == :G_cond
                 result = merge(result, (G_cond = cond(hcat(input.G...)),))
@@ -177,8 +180,6 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 catch e
                     result = merge(result, (Gcal_k_geocond = NaN,))
                 end
-            elseif sym == :positions
-                result = merge(result, (positions = input.positions, ))
             end
         end
 
