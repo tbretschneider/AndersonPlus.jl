@@ -90,7 +90,7 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
             elseif sym == :alpha
                 result = merge(result, (alpha = copy(input.alpha),))
             elseif sym == :HisStuf
-                result = merge(result, (HisStuf = input.HisStuf,))
+                result = merge(result, (HisStuf = copy(input.HisStuf),))
             end
         end
 
