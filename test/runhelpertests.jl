@@ -1,5 +1,9 @@
 using AndersonPlus: ridge_regression, gamma_to_alpha
 
+Lots = false
+
+if Lots
+
 @testset "Ridge Regression and Gamma to Alpha Tests" begin
     @testset "ridge_regression" begin
         A = [1.0 2.0; 3.0 4.0; 5.0 6.0]
@@ -237,4 +241,36 @@ end
     @test isapprox(XTXloopinv,XTXloopinv')
     @test isapprox(XTXloopinv*XTX,I(10))
 
+end
+
+end
+
+using AndersonPlus: quickAAHistoricalStuff, AnglesUpdate!
+
+@testset "AnglesUpdate!" begin
+    numrows = 5
+    m = 3
+
+    # Create a quickAAHistoricalStuff object
+    HS = quickAAHistoricalStuff(numrows, m)
+
+    # Initialize some values
+    HS.Gtilde_k .= reshape(collect(1:(numrows*m)), numrows, m)  # Fill Gtilde_k with known values
+    HS.positions .= [1, -1, 2]  # Only first and third should be updated
+    HS.sin_k .= zeros(m)  # Ensure it's initialized
+
+    gtilde_k = [0.5, 1.0, -0.5, 2.0, -1.0]  # Some arbitrary test vector
+
+    # Compute expected dot products for valid indices
+    expected_sin_k = zeros(m)
+    expected_sin_k[1] = dot(gtilde_k, HS.Gtilde_k[:, 1])
+    expected_sin_k[3] = dot(gtilde_k, HS.Gtilde_k[:, 3])
+
+    # Run the function
+    AnglesUpdate!(HS, gtilde_k)
+
+    # Test that only the expected indices were updated
+    @test HS.sin_k[1] ≈ expected_sin_k[1]
+    @test HS.sin_k[3] ≈ expected_sin_k[3]
+    @test HS.sin_k[2] == 0  # Should remain unchanged
 end
