@@ -345,7 +345,7 @@ end
 function AnglesUpdate!(HS, gtilde_k)
     for (i,position) in enumerate(HS.positions)
         if position != -1
-            HS.sin_k[i] .= dot(gtilde_k, HS.Gtilde_k[:,i])
+            HS.sin_k[i] = dot(gtilde_k, HS.Gtilde_k[:,i])
         end
     end
 end
