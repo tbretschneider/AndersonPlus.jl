@@ -315,48 +315,89 @@ using AndersonPlus: quickAAHistoricalStuff, AddNew!
 
 
 @testset "AddNew! Function" begin
-    numrows = 4
-    m = 3
-
+    m=10
     # Initialize test object
-    HS = quickAAHistoricalStuff(numrows, m)
-    HS.GtildeTGtildeinv .= Matrix(I, m, m)  # Identity matrix for simplicity
-    HS.positions .= [-1, 1, 2]  # First position is available
-    HS.sin_k .= [0.0, 0.5, 0.8]  # Initial sin_k values
-    HS.Ninv .= Diagonal([1.0, 2.0, 3.0])  # Initial diagonal values
-    HS.F_k .= zeros(numrows, m)  # Placeholder values
-    HS.Gtilde_k .= zeros(numrows, m)  # Placeholder values
-    HS.iterations = 10  # Arbitrary iteration count
+    k0 = 8.0
 
-    # New values to be added
-    n_kinv = 4.0
-    fval = [1.0, 2.0, 3.0, 4.0]
-    gres = [0.1, 0.2, 0.3, 0.4]
+    N = 1000
 
-    # Apply AddNew!
-    AddNew!(HS, n_kinv, fval, gres)
+    ε = 0.2
 
-    # Test that it fills the first available position (-1 -> 10)
-    @test HS.positions == [10, 1, 2]
+    Problem = P3(k0, ε, N)
 
-    # Test that sin_k[index] is set to 1.0
-    @test HS.sin_k == [1.0, 0.5, 0.8]
+    HS = AndersonPlus.quickAAHistoricalStuff(2002, m)
 
-    # Test that Ninv diagonal is updated correctly
-    @test diag(HS.Ninv) == [4.0, 2.0, 3.0]
+    threshold_func = (positions, iterations) -> fill(1.0, length(positions))
 
-    # Test that F_k and Gtilde_k store the correct values
-    @test HS.F_k[:, 1] == fval
-    @test HS.Gtilde_k[:, 1] == gres
+    # Create method parameters
+    methodparams = Dict(:threshold_func => threshold_func, :m => m)
 
-    # Now, test when no `-1` is available (forcing replacement)
-    HS.positions .= [1, 2, 3]  # No `-1` available, should replace index 1 (min position)
-    AddNew!(HS, n_kinv, fval, gres)
+    x0 = Problem.x0
+    x1 = copy(Problem.x0)
+    Problem.GFix!(x1,x0)
+    g_0 = x1 - x0
+    n_0inv = inv(norm(g_0))
+    gtilde_0 = g_0 * n_0inv
 
-    # The smallest position (index 1) should be replaced with iteration 10
-    @test HS.positions == [10, 2, 3]
-    @test HS.sin_k[1] == 1.0  # Ensure updated
-    @test HS.F_k[:, 1] == fval  # Ensure correct values
-    @test HS.Gtilde_k[:, 1] == gres  # Ensure correct values
-    @test diag(HS.Ninv) == [4.0, 2.0, 3.0]  # Check if diagonal update persists
+
+    AndersonPlus.AnglesUpdate!(HS, gtilde_0)
+
+    AndersonPlus.Filtering!(HS,methodparams)
+
+    AndersonPlus.AddNew!(HS,n_0inv,x1,gtilde_0)
+
+    alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+    alpha /= sum(alpha)
+
+    x1 = HS.F_k * alpha
+
+    HS.iterations += 1
+
+    x2 = copy(x1)
+    Problem.GFix!(x2,x1)
+    g_1 = x2 - x1
+    n_1inv = inv(norm(g_1))
+    gtilde_1 = g_1 * n_1inv
+
+
+    AndersonPlus.AnglesUpdate!(HS, gtilde_1)
+
+    AndersonPlus.Filtering!(HS,methodparams)
+
+    AndersonPlus.AddNew!(HS,n_1inv,x2,gtilde_1)
+
+    alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+    alpha /= sum(alpha)
+
+    x2 = HS.F_k * alpha
+
+    HS.iterations += 1
+
+    x3 = copy(x2)
+    Problem.GFix!(x3,x2)
+    g_2 = x3 - x2
+    n_2inv = inv(norm(g_2))
+    gtilde_2 = g_2 * n_2inv
+
+
+    AndersonPlus.AnglesUpdate!(HS, gtilde_2)
+
+    AndersonPlus.Filtering!(HS,methodparams)
+
+    AndersonPlus.AddNew!(HS,n_2inv,x3,gtilde_2)
+
+    alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+    alpha /= sum(alpha)
+
+    x3 = HS.F_k * alpha
+
+    G_k = hcat(g_0,g_1,g_2)
+    GTG = G_k'*G_k
+    afiz = inv(GTG)*ones(3)
+    afiz /= sum(afiz)
+
+    @test afiz ≈ alpha[1:3]
 end

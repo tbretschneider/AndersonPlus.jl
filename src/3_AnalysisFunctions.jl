@@ -89,6 +89,8 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (positions = copy(input.positions), ))
             elseif sym == :alpha
                 result = merge(result, (alpha = copy(input.alpha),))
+            elseif sym == :HS
+                result = merge(result, (HS = copy(input.HS),))
             end
         end
 

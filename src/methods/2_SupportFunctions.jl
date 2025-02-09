@@ -395,7 +395,7 @@ function AddNew!(HS,n_kinv,fval,gres)
     end
     HS.F_k[:,index] = copy(fval)
     HS.Ninv.diag[index] = copy(n_kinv)
-    HS.positions[index] = HS.iterations
+    HS.positions[index] = copy(HS.iterations)
     HS.Gtilde_k[:,index] = copy(gres)
 end
 
