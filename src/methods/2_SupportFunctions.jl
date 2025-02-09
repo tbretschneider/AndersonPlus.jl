@@ -366,14 +366,14 @@ function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where 
     A = inverse.data  # Extract the underlying matrix
     B = @view inverse[vcat(1:index-1, index+1:end), vcat(1:index-1, index+1:end)]
     d = @view inverse[index,index]
-    lr = @view inverse[index,vcat(1:index-1,index+1:end)]
-    lc = @view inverse[vcat(1:index-1,index+1:end),index]
     u2 = B*u1
-    lc = -u3
-    lr = -u3'
     d = inv(1 - dot(u1,u2))
     u3 = d*u2
     B += d * u2 * u2'
+    inverse.data[vcat(1:index-1, index+1:end), vcat(1:index-1, index+1:end)] .= B
+    inverse.data[index,vcat(1:index-1,index+1:end)] = -u3'
+    inverse.data[vcat(1:index-1,index+1:end),index] = -u3
+    inverse[index,index] = d
 end
 
 function AddNew!(HS,n_kinv)

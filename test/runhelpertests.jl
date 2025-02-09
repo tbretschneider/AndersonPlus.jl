@@ -104,7 +104,13 @@ using AndersonPlus: replaceinverse!
     Random.seed!(35)  # For reproducibility
     n = 10  # Matrix size
     A = randn(n, n)
+
+    for i in 1:size(A, 2)
+        A[:, i] /= norm(A[:, i])  # Normalize column i
+    end
+
     A = Symmetric(A'A)  # Ensure A is symmetric positive definite
+
     A_copy = copy(A)
     for index in 1:10
         Aloop = copy(A)
@@ -112,6 +118,9 @@ using AndersonPlus: replaceinverse!
         B = inv(B)
         Aloop.data[setdiff(1:10,n),setdiff(1:10,n)] .= B
         @test isapprox(Aloop[setdiff(1:10,n),setdiff(1:10,n)]*A_copy[setdiff(1:10,n),setdiff(1:10,n)], I(9))
+        u1 = A_copy[index,vcat(1:index-1,index+1:end)]
+        replaceinverse!(Aloop,index,u1)
+        @test isapprox(Aloop * A_copy, I(10))
     end
 
 end
