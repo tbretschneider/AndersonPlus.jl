@@ -85,6 +85,8 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (residual = input.residual,))
             elseif sym == :residualnorm
                 result = merge(result, (residualnorm = norm(input.residual),))
+            elseif sym == :positions
+                result = merge(result, (positions = input.positions, ))
             end
         end
 
@@ -175,6 +177,8 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 catch e
                     result = merge(result, (Gcal_k_geocond = NaN,))
                 end
+            elseif sym == :positions
+                result = merge(result, (positions = input.positions, ))
             end
         end
 

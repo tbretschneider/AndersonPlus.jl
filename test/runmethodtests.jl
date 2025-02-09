@@ -240,10 +240,10 @@ end
     Problem = P3(k0, ε, N)
 
     Algorithm = AAAlgorithm(AAMethod(:quickaa,(m=10, threshold_func = (itnums, curr) -> [1.0 for i in 1:length(itnums)])),
-                            (maxit = 50, ))
+                            (maxit = 200, ))
 
     Analyses = AAAnalysis([],
-                        [],
+                        [:residualnorm],
                         0,false)
                     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
