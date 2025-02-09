@@ -410,3 +410,56 @@ using AndersonPlus: quickAAHistoricalStuff, AddNew!
 
     @test afiz ≈ alpha[1:3]
 end
+
+@testset "AddNew! Function" begin
+    m=10
+    # Initialize test object
+    k0 = 8.0
+
+    N = 1000
+
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    HS = AndersonPlus.quickAAHistoricalStuff(2002, m)
+
+    threshold_func = (positions, iterations) -> fill(1.0, length(positions))
+
+    # Create method parameters
+    methodparams = Dict(:threshold_func => threshold_func, :m => m)
+
+    x_k = Problem.x0
+    x_kp1 = copy(x_k)
+
+    alphas = []
+    residuals = []
+
+    for i in 1:70
+        Problem.GFix!(x_kp1,x_k)
+        g_k = x_kp1 .- x_k
+        push!(residuals,norm(g_k))
+        n_kinv = inv(norm(g_k))
+        gtilde_k = g_k * n_kinv
+
+        AndersonPlus.AnglesUpdate!(HS, gtilde_k)
+
+        AndersonPlus.Filtering!(HS,methodparams)
+
+        AndersonPlus.AddNew!(HS,n_kinv,x_kp1,gtilde_k)
+
+        alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+        alpha /= sum(alpha)
+        push!(alphas,alpha)
+
+        x_kp1 = HS.F_k * alpha
+
+        HS.iterations += 1
+
+        copyto!(x_k,x_kp1)
+    end
+    
+
+    @test afiz ≈ alpha[1:3]
+end

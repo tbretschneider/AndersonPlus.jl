@@ -257,11 +257,11 @@ end
 
     Problem = P3(k0, ε, N)
 
-    Algorithm = AAAlgorithm(AAMethod(:quickaa,(m=10, threshold_func = (itnums, curr) -> [1.0 for i in 1:length(itnums)])),
+    Algorithm = AAAlgorithm(AAMethod(:quickaa,(m=10, threshold_func = (positions, iterations) -> fill(1.0, length(positions)))),
                             (maxit = 20, ))
 
     Analyses = AAAnalysis([],
-                        [:HS,:alpha],
+                        [:HisStuf,:alpha],
                         0,false)
                     
     Output = AASolve(AAInput(Problem,Algorithm,Analyses))
@@ -276,7 +276,7 @@ end
     Problem = P3(k0, ε, N)
 
     Algorithm = AAAlgorithm(AAMethod(:vanilla,(m=10,)),
-                            (maxit = 200, ))
+                            (maxit = 20, ))
 
     Analyses = AAAnalysis([],
                         [:residualnorm],
