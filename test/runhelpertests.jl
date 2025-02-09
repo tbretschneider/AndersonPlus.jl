@@ -291,7 +291,6 @@ using AndersonPlus: filteringindices, Filtering!
 
     # Initialize a quickAAHistoricalStuff object
     HS = quickAAHistoricalStuff(numrows, m)
-    HS.GtildeTGtildeinv.data = Matrix(I, m, m)  # Identity matrix for simplicity
     HS.positions .= [1, 2, -1]  # Third entry should be ignored
     HS.sin_k .= [0.6, 0.4, 0.8]  # First and third exceed threshold
 
