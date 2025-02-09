@@ -97,28 +97,28 @@ using AndersonPlus: updateinverse!, Random
         @test A_inv_copy ≈ A_inv_copy'
 	end
 
+
+
+	
     Random.seed!(42)  # For reproducibility
-    n = 20  # Matrix size
+    n = 10  # Matrix size
     A = randn(n, n)
     A = Symmetric(A'A)  # Ensure A is symmetric positive definite
-
-    smallA = @view A[5:15,5:15]
-
-    smallA_inv = inv(smallA)  # Compute its inverse
-
-
-	for index in 1:10
-        A_inv_copy = copy(smallA_inv)  # Ensure in-place updates don't affect other tests
+    A.data[3,1:10] = 0.0
+    A.data[1:10,3] = 0.0
+    A_inv = copy(A)
+    A_inv.data[setdiff(1:10,3),setdiff(1:10,3)] = inv(@view A[setdiff(1:10,3),setdiff(1:10,3)])
+    index = 5
+        A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
         updateinverse!(A_inv_copy,index)
 
         # Compute expected result by removing row/column and inverting
-	    A_inv_exact = inv(smallA[setdiff(1:n,index),setdiff(1:n,index)])
+	A_inv_exact = inv(A[setdiff(1:n,[index,3]),setdiff(1:n,[index,3])])
 
         # Check correctness
-        @test isapprox(A_inv_copy[setdiff(1:n, index), setdiff(1:n, index)], A_inv_exact)
+	@test isapprox(A_inv_copy[setdiff(1:n, [index,3]), setdiff(1:n, [index,3])], A_inv_exact)
         # Ensure symmetry is preserved
-        @test A_inv_copy ≈ A_inv_copy'
-	end
+	@test isapprox((A_inv_copy * A)[setdiff(1:n,[index,3]),setdiff(1:n,[index,3])],I(8))
 
 
 end
