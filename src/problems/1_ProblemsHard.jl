@@ -234,11 +234,11 @@ x_end = 10.0
 x = range(x_start, x_end, length=N+1)
 
 function p3_f!(G,u)
-    G .= AndersonPlus.p3_f_helper!(u, k0, ε, N)
+    G .= AndersonPlus.p3_f_helper!(copy(u), k0, ε, N)
 end
 
 function p3_f!(G,u,x0,ε, N)
-    G .= AndersonPlus.p3_f_helper!(u, k0, ε, N)
+    G .= AndersonPlus.p3_f_helper!(copy(u), k0, ε, N)
 end
 
 u_re = cos.(k0 * x)
