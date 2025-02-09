@@ -349,21 +349,17 @@ end
 using LinearAlgebra.BLAS, Random
 
 function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
-	A = inverse.data
-    α = A[index, index]
+    A = inverse.data  # Access underlying matrix (modifies in place)
+    α = inverse[index, index]
 
     # Define the update vector
-    v = A[:, index]
+    v = inverse[:, index]  # View to avoid allocations
 
     # Perform a symmetric rank-one update using BLAS
     #A -= inv(α)*v*v'
-    BLAS.syr!('U',-inv(α), v, A)
 
-    # Explicitly enforce symmetry (copy upper triangle to lower triangle)
-   # for i in 1:size(A, 1), j in 1:i-1
-    #    A[i, j] = A[j, i]
-    #end
-    #BLAS.syr!('U',-inv(α), v, A)
+    BLAS.syr!('U', -inv(α), v, A)  # Only updates upper triangular part
+
 end
 
 function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
