@@ -420,6 +420,8 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
 
+            alpha /= sum(alpha)
+
             x_kp1 = HS.F_k * alpha
 
             HS.iterations += 1
