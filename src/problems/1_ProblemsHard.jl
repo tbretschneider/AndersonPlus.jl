@@ -256,7 +256,7 @@ function P3(k0, ε, N)
     u_im = sin.(k0 * x)
     x_0 = vcat(u_re, u_im); # Concatenate into a single vector
     
-    return AAProblem((G,u) -> p3_f!(G,u, k0, ε, N),
+    return AAProblem((G,u) -> p3_f!(G,copy(u), k0, ε, N),
             x_0,
             AAConvParams(1e-10, 0))
 end
