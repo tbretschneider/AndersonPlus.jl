@@ -246,6 +246,7 @@ end
 end
 
 using AndersonPlus: quickAAHistoricalStuff, AnglesUpdate!
+using LinearAlgebra
 
 @testset "AnglesUpdate!" begin
     numrows = 5
