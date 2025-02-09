@@ -407,7 +407,6 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
     elseif aamethod.methodname == :quickaa
         return function(HS::quickAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
 
-            x_kp1 = copy(x_k)
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
             n_kinv = inv(norm(g_k))

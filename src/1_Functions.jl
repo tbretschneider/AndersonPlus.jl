@@ -126,7 +126,7 @@ function AASolve(input::AAInput)::AAOutput
 
         converged = checktolerances(x_kp1,x_k,convparams)
 
-        x_k, x_kp1 = x_kp1, x_k
+        copyto!(x_k,x_kp1)
     end
 
     postanalysis = AAAnalysisOutput(input,fullmidanalysis,HS.iterations)
