@@ -133,24 +133,40 @@ using AndersonPlus: replaceinverse!
 @testset "Test replaceinverse!" begin
     Random.seed!(35)  # For reproducibility
     n = 10  # Matrix size
-    A = randn(n, n)
+    History = randn(30, n)
 
     for i in 1:size(A, 2)
         A[:, i] /= norm(A[:, i])  # Normalize column i
     end
 
-    A = Symmetric(A'A)  # Ensure A is symmetric positive definite
+    XTX = Symmetric(A'A)  # Ensure A is symmetric positive definite
 
-    A_copy = copy(A)
+    XTX_copy = copy(XTX)
+
+
     for index in 1:10
-        Aloop = copy(A)
-        B = @view Aloop[setdiff(1:10,n),setdiff(1:10,n)]
-        B = inv(B)
-        Aloop.data[setdiff(1:10,n),setdiff(1:10,n)] .= B
-        @test isapprox(Aloop[setdiff(1:10,n),setdiff(1:10,n)]*A_copy[setdiff(1:10,n),setdiff(1:10,n)], I(9))
-        u1 = A_copy[index,vcat(1:index-1,index+1:end)]
-        replaceinverse!(Aloop,index,u1)
-        @test isapprox(Aloop * A_copy, I(10))
+        XTXloop = copy(XTX)
+
+        #First make small...
+
+        XTXloopinv = copy(Symmetric(inv(XTXloop)))  # Ensure in-place updates don't affect other tests
+        updateinverse!(XTXloopinv,index)
+
+        newidentity = I(10)
+        newidentity[index,index] .= 0
+
+        # Check we have small inverse
+        @test isapprox((XTXloopinv*XTX),newidentity)
+        @test isapprox((XTXloopinv[setdiff(1:n,index),setdiff(1:n,index)]*XTX[setdiff(1:n,index),setdiff(1:n,index)]),I(9))
+
+        #Now add back in the column and hopefully we get back to what we had...
+
+        replaceinverse!(XTXloopinv,index,XTXloop[index,1:n])
+
+
+
+        @test isapprox((XTXloopinv*XTX),I(10))
+
     end
 
 end

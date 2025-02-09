@@ -365,7 +365,7 @@ function updateinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
 
 end
 
-function replaceinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
+function addinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
     A = inverse.data  # Extract the underlying matrix
     d = inverse[index,index]
     u2 = BLAS.symv('U', A, u1) #Calculates A*u1
@@ -386,7 +386,7 @@ function AddNew!(HS,n_kinv)
         HS.positions[index] .= -1
         updateinverse!(HS.GtildeTGtildeinv,index)
         HS.sin_k[index] = 1.0
-        replaceinverse!(HS.GtildeTGtildeinv,
+        addinverse!(HS.GtildeTGtildeinv,
 			index,
 			HS.sin_k)
         HS.Ninv.diag[index] = n_kinv
@@ -394,7 +394,7 @@ function AddNew!(HS,n_kinv)
     else
         HS.positions[index] = HS.iterations
         HS.sin_k[index] = 1.0
-        replaceinverse!(B,
+        addinverse!(HS.GtildeTGtildeinv,
         index,
         HS.sin_k)
         HS.Ninv.diag[index] = n_kinv
