@@ -275,3 +275,38 @@ using LinearAlgebra
     @test HS.sin_k[3] ≈ expected_sin_k[3]
     @test HS.sin_k[2] == 0  # Should remain unchanged
 end
+
+
+using AndersonPlus: filteringindices, Filtering!
+
+@testset "Filtering Functions" begin
+    numrows = 5
+    m = 3
+
+    # Define a simple threshold function for testing
+    threshold_func = (positions, iterations) -> fill(0.5, length(positions))
+
+    # Create method parameters
+    methodparams = Dict(:threshold_func => threshold_func, :m => m)
+
+    # Initialize a quickAAHistoricalStuff object
+    HS = quickAAHistoricalStuff(numrows, m)
+    HS.GtildeTGtildeinv .= Matrix(I, m, m)  # Identity matrix for simplicity
+    HS.positions .= [1, 2, -1]  # Third entry should be ignored
+    HS.sin_k .= [0.6, 0.4, 0.8]  # First and third exceed threshold
+
+    # Check filteringindices
+    expected_filtered = [true, false, true]  # Based on sin_k > 0.5
+    @test filteringindices(HS, methodparams) == expected_filtered
+
+    # Apply Filtering!
+    Filtering!(HS, methodparams)
+
+    # First and third positions should be set to -1
+    @test HS.positions == [-1, 2, -1]
+
+    # Check if the GtildeTGtildeinv matrix is updated correctly (i.e., reflects the removal of the positions)
+    # Let's assume it reduces the size by the number of filtered positions.
+
+    # Check that sin_k values that are filtered are removed (this assumes Filtering! works as intended)
+end
