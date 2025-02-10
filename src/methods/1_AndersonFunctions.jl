@@ -407,6 +407,7 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
     elseif aamethod.methodname == :quickaa
         return function(HS::quickAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
 
+
             GFix!(x_kp1,x_k)
             g_k = x_kp1 .- x_k
             n_kinv = inv(norm(g_k))
@@ -422,18 +423,15 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
 
             alpha /= sum(alpha)
 
-            x_kp1 = HS.F_k * alpha
+            x_kp1 .= HS.F_k * alpha
 
             HS.iterations += 1
 
-            midanalysisin = (residual = g_k, 
-            #GtildeTGtildeinv = HS.GtildeTGtildeinv,positions = HS.positions,
-            alpha = alpha,
-            #HisStuf=HS
+            midanalysisin = (residual = g_k, GtildeTGtildeinv = HS.GtildeTGtildeinv,positions = HS.positions,
+            alpha = alpha,HisStuf=HS
             )
 
-            liveanalysisin = (iterations = HS.iterations,
-             #x_kp1 = x_kp1, x_k = x_k, residual = g_k,positions = HS.positions
+            liveanalysisin = (iterations = HS.iterations,x_kp1 = x_kp1, x_k = x_k, residual = g_k,positions = HS.positions
              )
 
             midanalysis = midanalysisfunc(midanalysisin)
