@@ -318,6 +318,129 @@ function create_next_iterate_function(GFix!, aamethod::AAMethod, liveanalysisfun
             return midanalysis, liveanalysis
 
         end
+    elseif aamethod.methodname == :rfaa
+        return function(HS::RFAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            m = aamethod.methodparams.m
+
+            filtered = RandomFilter!(HS,aamethod.methodparams.probfun)
+
+            HS.F_k = hcat(x_kp1,HS.F_k)
+
+            HS.G_k = hcat(g_k,HS.G_k)
+
+            if HS.iterations > 0
+
+                if size(HS.G_k,2) > m
+                    HS.G_k = HS.G_k[:,1:m]
+                    HS.F_k = HS.F_k[:,1:m]
+                end
+                
+                GT_G = HS.G_k' * HS.G_k
+		        ones_vec = ones(size(GT_G,1))
+                α = GT_G \ ones_vec  # Solves the system without computing the inverse
+        
+                # Step 2: Normalize α
+                alpha_k = α / sum(α)
+          
+                x_kp1 .= HS.F_k * alpha_k
+
+            elseif HS.iterations == 0
+
+            end
+            
+            HS.iterations += 1
+
+            midanalysisin = (residual = g_k, filtered = filtered, G_k = HS.G_k)
+
+            liveanalysisin = (iterations = HS.iterations, filtered = filtered, x_kp1 = x_kp1, x_k = x_k, residual = g_k, G_k = HS.G_k)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
+    elseif aamethod.methodname == :rflsaa
+        return function(HS::RFLSAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            m = aamethod.methodparams.m
+
+            if HS.iterations > 0
+                HS.Gcal_k = hcat(g_k - HS.g_km1,HS.Gcal_k)
+                if size(HS.Gcal_k,2) > m - 1
+                    HS.Gcal_k = HS.Gcal_k[:,1:m-1]
+                    HS.Xcal_k = HS.Xcal_k[:,1:m-1]
+                end
+
+                filtered = RandomFilterLS!(HS, aamethod.methodparams.probfun)
+
+                gamma_k = HS.Gcal_k \ g_k
+                        
+                x_kp1 .= x_k .+ g_k .- (HS.Xcal_k + HS.Gcal_k) * gamma_k 
+
+            elseif HS.iterations == 0
+                gamma_k = NaN
+		        filtered = NaN
+            end
+            
+            HS.Xcal_k = hcat(x_kp1 - x_k,HS.Xcal_k)
+            HS.g_km1 = g_k
+            HS.iterations += 1
+
+            midanalysisin = (gamma_k = gamma_k, residual = g_k,filtered = filtered,Gcal_k = HS.Gcal_k)
+
+            liveanalysisin = (Gcal_k = HS.Gcal_k, filtered = filtered, iterations = HS.iterations, x_kp1 = x_kp1, x_k = x_k, residual = g_k)
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
+    elseif aamethod.methodname == :quickaa
+        return function(HS::quickAAHistoricalStuff,x_kp1::Vector{Float64}, x_k::Vector{Float64})
+
+
+            GFix!(x_kp1,x_k)
+            g_k = x_kp1 .- x_k
+            n_kinv = inv(norm(g_k))
+            gtilde_k = g_k * n_kinv
+
+            AnglesUpdate!(HS, gtilde_k)
+
+            Filtering!(HS,aamethod.methodparams)
+
+            AddNew!(HS,n_kinv,x_kp1,gtilde_k)
+
+            alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+            alpha /= sum(alpha)
+
+            x_kp1 .= HS.F_k * alpha
+
+            HS.iterations += 1
+
+            midanalysisin = (residual = g_k, GtildeTGtildeinv = HS.GtildeTGtildeinv,positions = HS.positions,
+            alpha = alpha,HisStuf=HS
+            )
+
+            liveanalysisin = (iterations = HS.iterations,x_kp1 = x_kp1, x_k = x_k, residual = g_k,positions = HS.positions
+             )
+
+            midanalysis = midanalysisfunc(midanalysisin)
+
+            liveanalysis = liveanalysisfunc(liveanalysisin)
+
+            return midanalysis, liveanalysis
+
+        end
     else
         error("Unsupported methodname: $(aamethod.methodname)")
     end

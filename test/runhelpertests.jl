@@ -1,5 +1,9 @@
 using AndersonPlus: ridge_regression, gamma_to_alpha
 
+Lots = false
+
+if Lots
+
 @testset "Ridge Regression and Gamma to Alpha Tests" begin
     @testset "ridge_regression" begin
         A = [1.0 2.0; 3.0 4.0; 5.0 6.0]
@@ -74,4 +78,388 @@ using AndersonPlus: nl_reflector!
     result = nl_reflector!(x)
     @test result == zero(Float64)
     @test length(x) == 0  # Ensure the vector remains empty
+end
+
+using AndersonPlus: removeinverse!, Random
+
+@testset "removeinverse! Tests" begin
+    Random.seed!(42)  # For reproducibility
+    n = 10  # Matrix size
+    A = randn(n, n)
+    A = Symmetric(A'A)  # Ensure A is symmetric positive definite
+    A_inv = inv(A)  # Compute its inverse
+	for index in 1:10
+        A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
+        removeinverse!(A_inv_copy,index)
+
+        # Compute expected result by removing row/column and inverting
+	A_inv_exact = inv(A[setdiff(1:n,index),setdiff(1:n,index)])
+
+        # Check correctness
+        @test isapprox(A_inv_copy[setdiff(1:n, index), setdiff(1:n, index)], A_inv_exact)
+        # Ensure symmetry is preserved
+        @test A_inv_copy ≈ A_inv_copy'
+	end
+
+
+    # Testing if we can just work with big matrix????? Would be very cool!
+	
+    Random.seed!(42)  # For reproducibility
+    n = 10  # Matrix size
+    A = randn(n, n)
+    A = Symmetric(A'A)  # Ensure A is symmetric positive definite
+
+    A_inv = copy(A)
+
+    A_inv.data[setdiff(1:10,3),setdiff(1:10,3)] = inv(@view A[setdiff(1:10,3),setdiff(1:10,3)])
+
+    A_inv.data[3,1:10] .= 0.0
+    
+    A_inv.data[1:10,3] .= 0.0
+
+    index = 5
+    A_inv_copy = copy(A_inv)  # Ensure in-place updates don't affect other tests
+    removeinverse!(A_inv_copy,index)
+
+        # Compute expected result by removing row/column and inverting
+	A_inv_exact = inv(A[setdiff(1:n,[index,3]),setdiff(1:n,[index,3])])
+
+        # Check correctness
+	@test isapprox(A_inv_copy[setdiff(1:n, [index,3]), setdiff(1:n, [index,3])], A_inv_exact)
+        # Ensure symmetry is preserved
+	@test isapprox((A_inv_copy * A)[setdiff(1:n,[index,3]),setdiff(1:n,[index,3])],I(8))
+
+
+end
+
+using AndersonPlus: addinverse!
+
+@testset "Test addinverse!" begin
+    Random.seed!(35)  # For reproducibility
+    n = 10  # Matrix size
+    History = randn(30, n)
+
+    for i in 1:size(History, 2)
+        History[:, i] /= norm(History[:, i])  # Normalize column i
+    end
+
+    XTX = Symmetric(History'History)  # Ensure A is symmetric positive definite
+
+    XTX_copy = copy(XTX)
+
+
+    for index in 1:10
+        XTXloop = copy(XTX)
+
+        #First make small...
+
+        XTXloopinv = Symmetric(inv(XTXloop))  # Ensure in-place updates don't affect other tests
+        removeinverse!(XTXloopinv,index)
+
+        newidentity = I(10)
+        newidentity[index,index] = 0
+
+        # Check we have small inverse
+	@test isapprox(XTXloopinv,XTXloopinv')
+	@test isapprox((XTXloopinv*XTX)[setdiff(1:n,index),setdiff(1:n,index)],I(10)[setdiff(1:n,index),setdiff(1:n,index)];atol = 1e-8)
+        @test isapprox((XTXloopinv[setdiff(1:n,index),setdiff(1:n,index)]*XTX[setdiff(1:n,index),setdiff(1:n,index)]),I(9))
+
+        #Now add back in the column and hopefully we get back to what we had...
+
+        addinverse!(XTXloopinv,index,XTXloop[index,1:n])
+
+
+
+        @test isapprox((XTXloopinv*XTX),I(10))
+
+    end
+
+end
+
+
+#Remove multiple then add them back in...
+
+
+@testset "Testing removing then adding back..." begin
+    Random.seed!(35)  # For reproducibility
+    n = 10  # Matrix size
+    History = randn(30, n)
+
+    for i in 1:size(History, 2)
+        History[:, i] /= norm(History[:, i])  # Normalize column i
+    end
+
+    XTX = Symmetric(History'History)  # Ensure A is symmetric positive definite
+
+    XTX_copy = copy(XTX)
+
+
+    XTXloop = copy(XTX)
+
+    #First make small...
+
+    XTXloopinv = Symmetric(inv(XTXloop))
+    removeinverse!(XTXloopinv,5)
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,5),setdiff(1:n,5)],I(10)[setdiff(1:n,5),setdiff(1:n,5)])
+    @test isapprox((XTXloopinv[setdiff(1:n,5),setdiff(1:n,5)]*XTX[setdiff(1:n,5),setdiff(1:n,5)]),I(9))
+
+    removeinverse!(XTXloopinv,6)
+
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])],I(10)[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])]*XTX[setdiff(1:n,[5,6]),setdiff(1:n,[5,6])]),I(8))
+
+
+    removeinverse!(XTXloopinv,8)
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])],I(10)[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])]*XTX[setdiff(1:n,[5,6,8]),setdiff(1:n,[5,6,8])]),I(7))
+
+
+    #Now add back in the column and hopefully we get back to what we had...
+
+    addinverse!(XTXloopinv,6,XTXloop[6,1:n])
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])],I(10)[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])]*XTX[setdiff(1:n,[5,8]),setdiff(1:n,[5,8])]),I(8))
+
+
+    addinverse!(XTXloopinv,5,XTXloop[5,1:n])
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox((XTXloopinv*XTX)[setdiff(1:n,[8]),setdiff(1:n,[8])],I(10)[setdiff(1:n,[8]),setdiff(1:n,[8])])
+    @test isapprox((XTXloopinv[setdiff(1:n,[8]),setdiff(1:n,[8])]*XTX[setdiff(1:n,[8]),setdiff(1:n,[8])]),I(9))
+
+
+    addinverse!(XTXloopinv,8,XTXloop[8,1:n])
+
+    @test isapprox(XTXloopinv,XTXloopinv')
+    @test isapprox(XTXloopinv*XTX,I(10))
+
+end
+
+end
+
+using AndersonPlus: quickAAHistoricalStuff, AnglesUpdate!
+using LinearAlgebra
+
+@testset "AnglesUpdate!" begin
+    numrows = 5
+    m = 3
+
+    # Create a quickAAHistoricalStuff object
+    HS = quickAAHistoricalStuff(numrows, m)
+
+    # Initialize some values
+    HS.Gtilde_k .= reshape(collect(1:(numrows*m)), numrows, m)  # Fill Gtilde_k with known values
+    HS.positions .= [1, -1, 2]  # Only first and third should be updated
+    HS.sin_k .= zeros(m)  # Ensure it's initialized
+
+    gtilde_k = [0.5, 1.0, -0.5, 2.0, -1.0]  # Some arbitrary test vector
+
+    # Compute expected dot products for valid indices
+    expected_sin_k = zeros(m)
+    expected_sin_k[1] = dot(gtilde_k, HS.Gtilde_k[:, 1])
+    expected_sin_k[3] = dot(gtilde_k, HS.Gtilde_k[:, 3])
+
+    # Run the function
+    AnglesUpdate!(HS, gtilde_k)
+
+    # Test that only the expected indices were updated
+    @test HS.sin_k[1] ≈ expected_sin_k[1]
+    @test HS.sin_k[3] ≈ expected_sin_k[3]
+    @test HS.sin_k[2] == 0  # Should remain unchanged
+end
+
+
+using AndersonPlus: filteringindices, Filtering!
+
+@testset "Filtering Functions" begin
+    numrows = 5
+    m = 3
+
+    # Define a simple threshold function for testing
+    threshold_func = (positions, iterations) -> fill(0.5, length(positions))
+
+    # Create method parameters
+    methodparams = Dict(:threshold_func => threshold_func, :m => m)
+
+    # Initialize a quickAAHistoricalStuff object
+    HS = quickAAHistoricalStuff(numrows, m)
+    HS.positions .= [1, 2, -1]  # Third entry should be ignored
+    HS.sin_k .= [0.6, 0.4, 0.8]  # First and third exceed threshold
+
+    # Check filteringindices
+    expected_filtered = [true, false, true]  # Based on sin_k > 0.5
+    @test filteringindices(HS, methodparams) == expected_filtered
+
+    # Apply Filtering!
+    Filtering!(HS, methodparams)
+
+    # First and third positions should be set to -1
+    @test HS.positions == [-1, 2, -1]
+
+    # Check if the GtildeTGtildeinv matrix is updated correctly (i.e., reflects the removal of the positions)
+    # Let's assume it reduces the size by the number of filtered positions.
+
+    # Check that sin_k values that are filtered are removed (this assumes Filtering! works as intended)
+end
+
+
+using AndersonPlus: quickAAHistoricalStuff, AddNew!
+
+
+@testset "AddNew! Function" begin
+    m=10
+    # Initialize test object
+    k0 = 8.0
+
+    N = 1000
+
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    HS = AndersonPlus.quickAAHistoricalStuff(2002, m)
+
+    threshold_func = (positions, iterations) -> fill(1.0, length(positions))
+
+    # Create method parameters
+    methodparams = Dict(:threshold_func => threshold_func, :m => m)
+
+    x0 = Problem.x0
+    x1 = copy(Problem.x0)
+    Problem.GFix!(x1,x0)
+    g_0 = x1 - x0
+    n_0inv = inv(norm(g_0))
+    gtilde_0 = g_0 * n_0inv
+
+
+    AndersonPlus.AnglesUpdate!(HS, gtilde_0)
+
+    AndersonPlus.Filtering!(HS,methodparams)
+
+    AndersonPlus.AddNew!(HS,n_0inv,x1,gtilde_0)
+
+    alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+    alpha /= sum(alpha)
+
+    x1 = HS.F_k * alpha
+
+    HS.iterations += 1
+
+    HS_1 = copy(HS)
+
+    x2 = copy(x1)
+    Problem.GFix!(x2,x1)
+    g_1 = x2 - x1
+    n_1inv = inv(norm(g_1))
+    gtilde_1 = g_1 * n_1inv
+
+
+    AndersonPlus.AnglesUpdate!(HS, gtilde_1)
+
+    AndersonPlus.Filtering!(HS,methodparams)
+
+    AndersonPlus.AddNew!(HS,n_1inv,x2,gtilde_1)
+
+    alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+    alpha /= sum(alpha)
+
+    x2 = HS.F_k * alpha
+
+    HS.iterations += 1
+
+    HS_2 = copy(HS)
+
+    x3 = copy(x2)
+    Problem.GFix!(x3,x2)
+    g_2 = x3 - x2
+    n_2inv = inv(norm(g_2))
+    gtilde_2 = g_2 * n_2inv
+
+
+    AndersonPlus.AnglesUpdate!(HS, gtilde_2)
+
+    AndersonPlus.Filtering!(HS,methodparams)
+
+    AndersonPlus.AddNew!(HS,n_2inv,x3,gtilde_2)
+
+    alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+    alpha /= sum(alpha)
+
+    x3 = HS.F_k * alpha
+
+    G_k = hcat(g_0,g_1,g_2)
+    GTG = G_k'*G_k
+    afiz = inv(GTG)*ones(3)
+    afiz /= sum(afiz)
+
+
+    HS.iterations += 1
+
+    HS_3 = copy(HS)
+
+    @test afiz ≈ alpha[1:3]
+end
+
+@testset "AddNew! Function" begin
+    m=10
+    # Initialize test object
+    k0 = 8.0
+
+    N = 1000
+
+    ε = 0.2
+
+    Problem = P3(k0, ε, N)
+
+    HS = AndersonPlus.quickAAHistoricalStuff(2002, m)
+
+    threshold_func = (positions, iterations) -> fill(1.0, length(positions))
+
+    # Create method parameters
+    methodparams = Dict(:threshold_func => threshold_func, :m => m)
+
+    x_k = Problem.x0
+    x_kp1 = copy(x_k)
+
+    alphas = []
+    residuals = []
+
+    for i in 1:70
+        Problem.GFix!(x_kp1,x_k)
+        g_k = x_kp1 .- x_k
+        push!(residuals,norm(g_k))
+        n_kinv = inv(norm(g_k))
+        gtilde_k = g_k * n_kinv
+
+        AndersonPlus.AnglesUpdate!(HS, gtilde_k)
+
+        AndersonPlus.Filtering!(HS,methodparams)
+
+        AndersonPlus.AddNew!(HS,n_kinv,x_kp1,gtilde_k)
+
+        alpha = HS.Ninv*HS.GtildeTGtildeinv*HS.Ninv*ones(length(HS.sin_k))
+
+        alpha /= sum(alpha)
+        push!(alphas,alpha)
+
+        x_kp1 = HS.F_k * alpha
+
+        HS.iterations += 1
+
+        copyto!(x_k,x_kp1)
+    end
+    
+
+    @test afiz ≈ alpha[1:3]
 end

@@ -57,6 +57,68 @@ mutable struct DWTAAHistoricalStuff <: HistoricalStuff
     end
 end
 
+mutable struct RFAAHistoricalStuff <: HistoricalStuff
+    G_k::Matrix{Float64}  # Matrix of Float64
+    F_k::Matrix{Float64}  # Matrix of Float64
+    residual::Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function RFAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), 1.0,0)
+    end
+end
+
+mutable struct RFLSAAHistoricalStuff <: HistoricalStuff
+    Gcal_k::Matrix{Float64}  # Matrix of Float64
+    Xcal_k::Matrix{Float64}  # Matrix of Float64
+    g_km1::Vector{Float64}  # Vector of Float64
+    iterations::Int  # Integer
+
+    # Constructor with default empty values
+    function RFLSAAHistoricalStuff(numrows::Int)
+        new(Matrix{Float64}(undef,numrows,0), Matrix{Float64}(undef,numrows,0), Vector{Float64}(undef,numrows), 0)
+    end
+end
+
+mutable struct quickAAHistoricalStuff <: HistoricalStuff
+    GtildeTGtildeinv::Symmetric{Float64, Matrix{Float64}}  # Symmetric matrix of size (m × m)
+    Ninv::Diagonal{Float64, Vector{Float64}}  # Diagonal matrix of size (m × m)
+    F_k::Matrix{Float64}  # Regular matrix of size (numrows × m)
+    Gtilde_k::Matrix{Float64}  # Regular matrix of size (numrows × m)
+    sin_k::Vector{Float64}  # Vector of size (m)
+    positions::Vector{Int}  # Vector of size (m)
+    iterations::Int  # Integer counter
+
+    # Internal constructor (allows constructing from raw fields)
+    function quickAAHistoricalStuff(
+        GtildeTGtildeinv::Symmetric{Float64, Matrix{Float64}},
+        Ninv::Diagonal{Float64, Vector{Float64}},
+        F_k::Matrix{Float64},
+        Gtilde_k::Matrix{Float64},
+        sin_k::Vector{Float64},
+        positions::Vector{Int},
+        iterations::Int
+    )
+        return new(GtildeTGtildeinv, Ninv, F_k, Gtilde_k, sin_k, positions, iterations)
+    end
+
+    # Constructor
+    function quickAAHistoricalStuff(numrows::Int, m::Int)
+        GtildeTGtildeinv = Symmetric(zeros(m, m))  # Symmetric matrix of size (m × m)
+        Ninv = Diagonal(zeros(m))  # Diagonal matrix of size (m × m)
+        F_k = zeros(numrows, m)  # Regular matrix (numrows × m)
+        Gtilde_k = zeros(numrows, m)  # Regular matrix (numrows × m)
+        sin_k = zeros(m)  # Vector of size (m)
+        positions = fill(-1, m)  # Vector of size (m), initialized to -1
+        iterations = 0  # Start at zero iterations
+
+        return new(GtildeTGtildeinv, Ninv, F_k, Gtilde_k, sin_k, positions, iterations)
+    end
+end
+
+
+
 """
     initialise_historicalstuff(methodname::Symbol, x_k::Vector)
 
@@ -81,11 +143,30 @@ function initialise_historicalstuff(method::AAMethod,x_0::Vector)
         return FFTAAHistoricalStuff(length(x_0),method.methodparams.tf)
     elseif methodname == :dwtaa
         return DWTAAHistoricalStuff(length(x_0))
+    elseif methodname == :rfaa
+        return RFAAHistoricalStuff(length(x_0))
+    elseif methodname == :rflsaa
+        return RFLSAAHistoricalStuff(length(x_0))
+    elseif methodname == :quickaa
+        return quickAAHistoricalStuff(length(x_0),method.methodparams.m)
     else
         error("Unsupported AAMethod: $methodname")
     end
 end
 
+
+# Define a `copy` method
+function Base.copy(HS::quickAAHistoricalStuff)
+    return quickAAHistoricalStuff(
+        copy(HS.GtildeTGtildeinv),  # Copy Symmetric matrix
+        copy(HS.Ninv),  # Copy Diagonal matrix
+        copy(HS.F_k),  # Copy regular matrix
+        copy(HS.Gtilde_k),  # Copy regular matrix
+        copy(HS.sin_k),  # Copy vector
+        copy(HS.positions),  # Copy vector
+        HS.iterations  # Integer does not need copying
+    )
+end
 
 ##########################################
 ########## Method Specific Stuff #########
@@ -111,6 +192,9 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :faa => (cs = 0.1, kappabar = 1, m = 20),
         :fftaa => (m = 10, tf  = 0.9),
         :dwtaa => (m=10),
+        :rfaa => (m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
+        :rflsaa => (m=10, probfun = (it, len) -> [1-i/(2*len*len) for i in 1:len]),
+        :quickaa => (m=10, threshold_func = (itnums, curr) -> [1.0 for i in 1:length(itnums)]),
         :ipoptjumpvanilla => (m = 3, beta = 1.0),
         :picard => (beta = 1.0),
         :function_averaged => (beta = 1.0, m = 3, sample_size = 10),
@@ -135,6 +219,9 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
         :faa => [:cs, :kappabar, :m],
         :fftaa => [:m, :tf],
         :dwtaa => [:m],
+        :rfaa => [:m, :probfun],
+        :rflsaa => [:m, :probfun],
+        :quickaa => [:m, :threshold_func],
         :ipoptjumpvanilla => [:m, :beta],
         :picard => [:beta],
         :function_averaged => [:m, :beta, :sample_size],
@@ -166,7 +253,7 @@ function createAAMethod(method::Symbol; methodparams=nothing)::AAMethod
 end
 
 
-const SD = Dict(
+SD = Dict(
     :methodname => "Method Name",
     :methodparams => "Method Parameters",
     :algorithmparams => "Algorithm Parameters",
@@ -177,4 +264,7 @@ const SD = Dict(
     :faa => "Filtered (Pollock)",
     :fftaa => "Truncated Fourier Transformed History",
     :dwtaa => "Wavelet Transformed History",
+    :rfaa => "Randomised Filtering",
+    :rflsaa => "Randomised Filtering for Least Squares",
+    :quickaa => "Rank one updates to inverse...",
 )

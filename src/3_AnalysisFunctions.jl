@@ -69,10 +69,28 @@ function create_midanalysis_function(midanalysis::Vector{Symbol})
                 result = merge(result, (G_cond = cond(hcat(input.G...)),))
             elseif sym == :G_geocond
                 result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
+            elseif sym == :Gcal_k_cond
+                try
+                result = merge(result, (Gcal_k_cond = cond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_cond = NaN,))
+                end
+            elseif sym == :Gcal_k_geocond
+                try
+                result = merge(result, (Gcal_k_geocond = geometriccond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_geocond = NaN,))
+                end
             elseif sym == :residual
                 result = merge(result, (residual = input.residual,))
             elseif sym == :residualnorm
                 result = merge(result, (residualnorm = norm(input.residual),))
+            elseif sym == :positions
+                result = merge(result, (positions = copy(input.positions), ))
+            elseif sym == :alpha
+                result = merge(result, (alpha = copy(input.alpha),))
+            elseif sym == :HisStuf
+                result = merge(result, (HisStuf = copy(input.HisStuf),))
             end
         end
 
@@ -134,11 +152,38 @@ function create_liveanalysis_function(liveanalysis::Vector{Symbol})
                 if haskey(input, :filtered)
                     truehistlength = sum(.!input.filtered)
                 end
+                if haskey(input, :positions)
+                    truehistlength = sum(input.positions .!= -1)
+                end
                 result = merge(result, (truehistlength = truehistlength,))
             elseif sym == :G_cond
                 result = merge(result, (G_cond = cond(hcat(input.G...)),))
             elseif sym == :G_geocond
                 result = merge(result, (G_geocond = geometriccond(hcat(input.G...)),))
+            elseif sym == :G_k_cond
+                    try
+                    result = merge(result, (G_k_cond = cond(input.G_k),))
+                    catch e
+                        result = merge(result, (G_k_cond = NaN,))
+                    end
+            elseif sym == :G_k_geocond
+                    try
+                    result = merge(result, (G_k_geocond = geometriccond(input.G_k),))
+                    catch e
+                        result = merge(result, (G_k_cond = NaN,))
+                    end
+            elseif sym == :Gcal_k_cond
+                try
+                result = merge(result, (Gcal_k_cond = cond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_cond = NaN,))
+                end
+            elseif sym == :Gcal_k_geocond
+                try
+                result = merge(result, (Gcal_k_geocond = geometriccond(input.Gcal_k),))
+                catch e
+                    result = merge(result, (Gcal_k_geocond = NaN,))
+                end
             end
         end
 
@@ -149,14 +194,19 @@ end
 
 using Printf
 
-const AD = Dict(
+AD = Dict(
     :residualnorm => "Res Norm",
     :residual_ratio => "Res Ratio",
     :alpha_k_norm => "Coeff. Norm",
     :alpha_k_norm => "Coeff. Norm L1",
     :truehistlength => "Effective m",
     :G_cond => "G Condition",
-    :G_geocond => "G Geometric Condition"
+    :G_geocond => "G Geometric Condition",
+    :G_k_cond => "G Condition",
+    :G_k_geocond => "G Geometric Condition",
+    :Gcal_k_cond => "Gcal Condition",
+    :Gcal_k_geocond => "Gcal Geometric Condition",
+    :positions => "Positions",
 )
 
 """

@@ -289,3 +289,115 @@ function compute_compression_ratio(residual_ratio::Float64, iteration::Int)
     return clamp(compression_ratio, 1.0, 50.0)
 end
 
+function sample_bool_vector(probabilities::Vector{Float64})
+    return rand(length(probabilities)) .> probabilities
+end
+
+function RandomFilter!(HS,probfun)
+    if HS.iterations in (0,1)
+        return NaN
+    end
+    probabilities = probfun(HS.iterations,size(HS.G_k,2))
+    filtered = sample_bool_vector(probabilities)
+    HS.G_k = HS.G_k[:,.!filtered]
+    HS.F_k = HS.F_k[:,.!filtered]
+    return filtered
+end
+
+function RandomFilterLS!(HS,probfun)
+    if HS.iterations in (0,1)
+        return NaN
+    end
+    probabilities = probfun(HS.iterations,size(HS.Gcal_k,2)-1)
+    filtered = vcat(true,sample_bool_vector(probabilities))
+    HS.Gcal_k = HS.Gcal_k[:,.!filtered]
+    HS.Xcal_k = HS.Xcal_k[:,.!filtered]
+    return filtered
+end
+
+function removeinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int) where T
+    A = inverse.data  # Access underlying matrix (modifies in place)
+    α = inverse[index, index]
+
+    # Define the update vector
+    v = inverse[:, index]  # View to avoid allocations
+
+    # Perform a symmetric rank-one update using BLAS
+    #A -= inv(α)*v*v'
+
+    BLAS.syr!('U', -inv(α), v, A)  # Only updates upper triangular part
+
+end
+
+function addinverse!(inverse::Symmetric{T, Matrix{T}}, index::Int,u1) where T
+    A = inverse.data  # Extract the underlying matrix
+    d = inverse[index,index]
+    u2 = BLAS.symv('U', A, u1) #Calculates A*u1
+    d = inv(1 - dot(u1,u2))
+    u3 = d*u2
+    u3[index] = d
+    BLAS.syr!('U', d, u2, A)  # Only updates upper triangular part, calculates A + d*u2*u2'
+    A[index,:] = -u3'
+    A[:,index] = -u3
+    inverse[index,index] = d
+end
+
+function AnglesUpdate!(HS, gtilde_k)
+    for (i,position) in enumerate(HS.positions)
+        if position != -1
+            HS.sin_k[i] = dot(gtilde_k, HS.Gtilde_k[:,i])
+        end
+    end
+end
+
+function filteringindices(HS, methodparams)
+    threshold_func = methodparams[:threshold_func]  # Extract threshold function
+    m = methodparams[:m]
+    thresholds = threshold_func(HS.positions,HS.iterations)   # Compute thresholds for each index
+
+    # Create a boolean vector indicating whether each entry should be filtered
+    filteredindices = HS.sin_k .> thresholds
+
+    return filteredindices
+end
+
+function Filtering!(HS,methodparams)
+    filteredindices = filteringindices(HS,methodparams)
+    filtersforview = filteredindices[HS.positions .!= -1]
+
+    for index in reverse((1:length(filteredindices))[filteredindices])
+        removeinverse!(HS.GtildeTGtildeinv,index)
+        HS.positions[index] = -1
+    end
+end
+
+
+using LinearAlgebra.BLAS, Random
+
+# Really nice as we can pass extra stuff - even for multiplication 
+# as zeros are inserted in the rest of the places
+
+function AddNew!(HS,n_kinv,fval,gres)
+    #no -1 somewhere first. Need to find position
+    index = findfirst(x -> x == -1, HS.positions)
+    if isnothing(index)
+        index = argmin(HS.positions)
+        removeinverse!(HS.GtildeTGtildeinv,index)
+        HS.sin_k[index] = 1.0
+        addinverse!(HS.GtildeTGtildeinv,
+			index,
+			HS.sin_k)  
+    else
+        HS.sin_k[index] = 1.0
+        addinverse!(HS.GtildeTGtildeinv,
+        index,
+        HS.sin_k)
+    end
+    HS.F_k[:,index] = copy(fval)
+    HS.Ninv.diag[index] = copy(n_kinv)
+    HS.positions[index] = copy(HS.iterations)
+    HS.Gtilde_k[:,index] = copy(gres)
+end
+
+
+
